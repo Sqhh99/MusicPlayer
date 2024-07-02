@@ -8,3 +8,5 @@ This is a music player. Qt 6.6.0
 - Previous/Next Switch: Easily switch to the previous or next music, providing a better music browsing experience.
 - Pause/Play: Control the playback status of music and pause or resume playing your favorite tracks anytime, anywhere.
 - Sequential playback and looping playback: Select the sequential playback or looping playback mode according to your preferences, so that you can freely choose your listening experience.
+# screenshot
+![Uploading 609f3f7e9e00c3cca27247e53944cac3.png…]()
