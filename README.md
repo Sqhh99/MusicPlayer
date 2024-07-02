@@ -9,4 +9,4 @@ This is a music player. Qt 6.6.0
 - Pause/Play: Control the playback status of music and pause or resume playing your favorite tracks anytime, anywhere.
 - Sequential playback and looping playback: Select the sequential playback or looping playback mode according to your preferences, so that you can freely choose your listening experience.
 # screenshot
-![Uploading 609f3f7e9e00c3cca27247e53944cac3.png…]()
+![p1](https://github.com/Sqhh99/MusicPlayer/assets/127586242/f677aff8-3a82-4ce5-a127-11deb788cccc)
