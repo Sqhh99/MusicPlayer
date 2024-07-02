@@ -1,5 +1,5 @@
 # MusicPlayer
-This is a music player.
+This is a music player. Qt 6.6.0
 
 # music player 
 - This is a simple music player based on [C++/Qt], which implements some basic functions, allowing you to easily manage and play your music files.
