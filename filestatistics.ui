@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FileStatistics</class>
+ <widget class="QWidget" name="FileStatistics">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>845</width>
+    <height>634</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FileStatistics</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableView" name="FileStatisticsTableView">
+     <property name="minimumSize">
+      <size>
+       <width>500</width>
+       <height>500</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="FileNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>文件数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QTextEdit" name="FileNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="CodeRowNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>代码行数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QTextEdit" name="CodeRowNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QTextEdit" name="Pro1Text">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="ByteNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>字节数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QTextEdit" name="ByteNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="AnnRowNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>注释行数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QTextEdit" name="AnnRowNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QTextEdit" name="Pro2Text">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="TotNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>总行数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QTextEdit" name="TotNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="BlankNumLab">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>空白行数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QTextEdit" name="BlankNumText">
+         <property name="maximumSize">
+          <size>
+           <width>65</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QTextEdit" name="Pro3Text">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="OpenFileBtn">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>打开文件</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="ClearBtn">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>清空结果</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="FLab">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>过滤</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QTextEdit" name="FilePathText">
+         <property name="minimumSize">
+          <size>
+           <width>350</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="OpenConBtn">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>打开目录</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="FileLab">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>文件</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="ConLab">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>目录</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QTextEdit" name="FText">
+         <property name="minimumSize">
+          <size>
+           <width>350</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QTextEdit" name="ConPathText">
+         <property name="minimumSize">
+          <size>
+           <width>350</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>29</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
