@@ -1,6 +1,14 @@
-# Music Player
+# Music Player (v2.0)
 
 A modern music player application built with Qt 6 and CMake.
+
+## What's New in v2.0
+
+- **Complete build system migration**: Moved from qmake to CMake for better cross-platform support
+- **Improved settings management**: Enhanced configuration file handling with QSettings
+- **Modern project structure**: Reorganized codebase for better maintainability
+- **Performance optimizations**: Faster loading and smoother playback experience
+- **UI/UX improvements**: Refined user interface with better styling
 
 ## Features
 
@@ -48,6 +56,18 @@ MusicPlayer.exe  # Windows
 ## Screenshots
 
 (Screenshots will be added soon)
+
+## Version History
+
+### v2.0 (2024)
+- Migrated build system to CMake
+- Refactored code architecture for better maintainability
+- Enhanced settings management with persistent configurations
+- Improved volume control interface
+
+### v1.1 (2023)
+- Initial public release
+- Basic music playback functionality
 
 ## License
 
