@@ -1,0 +1,58 @@
+/* 音量控制样式 */
+
+/* Volume Popup Styling */
+VolumePopup {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+/* 滑块本身 */
+QSlider#volumeSlider {
+    min-width: 30px;
+    min-height: 80px;
+}
+
+QLabel#percentLabel {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #202020;
+    min-height: 18px;
+}
+
+QSlider#volumeSlider::groove:vertical {
+    border: none;
+    width: 4px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    margin: 0px 0;
+}
+
+QSlider#volumeSlider::handle:vertical {
+    background-color: #1DB954;
+    border: none;
+    height: 10px;
+    width: 10px;
+    border-radius: 5px;
+    margin: 0 -3px;
+}
+
+QSlider#volumeSlider::handle:vertical:hover {
+    background-color: #18a349;
+    height: 12px;
+    width: 12px;
+    border-radius: 6px;
+    margin: 0 -4px;
+}
+
+/* 确保绿色填充在下部 */
+QSlider#volumeSlider::add-page:vertical {
+    background: #1DB954;
+    border-radius: 2px;
+}
+
+QSlider#volumeSlider::sub-page:vertical {
+    background: #e6e6e6;
+    border-radius: 2px;
+} 

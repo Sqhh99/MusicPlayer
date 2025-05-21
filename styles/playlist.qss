@@ -1,0 +1,65 @@
+/* 播放列表样式 */
+
+/* Playlist Widget */
+QWidget#playlistWidget {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    border: none;
+    margin-top: 5px;
+}
+
+/* Playlist Label */
+QLabel#playlistLabel {
+    font-weight: 600; 
+    font-size: 10pt; 
+    color: #303030; 
+    padding-bottom: 4px;
+}
+
+/* Playlist List Widget */
+QListWidget#listWidget {
+    border: none; 
+    background-color: transparent;
+    outline: none; /* 禁用轮廓线 */
+}
+
+QListWidget#listWidget::item {
+    padding: 7px 10px; /* Vertical and horizontal padding */
+    color: #333333;
+    background-color: transparent; /* Default item background */
+    border-radius: 0px; /* 移除圆角 */
+    margin: 1px 0px; /* Small margin between items */
+    border: none; /* 确保没有边框 */
+    outline: none; /* 确保没有轮廓 */
+}
+
+QListWidget#listWidget::item:hover {
+    background-color: #e0e0e0; /* Lighter hover */
+    border: none;
+}
+
+QListWidget#listWidget::item:selected {
+    background-color: #1DB954; /* 保持绿色背景 */
+    color: white; 
+    border: none; /* 明确移除所有边框 */
+    outline: none; /* 移除轮廓线 */
+    border-radius: 0px; /* 移除圆角 */
+} 
+
+/* 同时高亮时确保没有边框 */
+QListWidget#listWidget::item:selected:hover {
+    background-color: #1DB954; 
+    border: none;
+    outline: none;
+}
+
+/* 禁用焦点样式 */
+QListWidget#listWidget:focus {
+    outline: none;
+    border: none;
+}
+
+QListWidget#listWidget::item:focus {
+    outline: none;
+    border: none;
+} 

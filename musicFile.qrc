@@ -1,0 +1,34 @@
+<RCC>
+    <qresource prefix="/">
+        <file>tubiao/File1.png</file>
+        <file>tubiao/icon_next.png</file>
+        <file>tubiao/icon_previous.png</file>
+        <file>tubiao/listen.png</file>
+        <file>tubiao/listen1.ico</file>
+        <file>tubiao/logo.ico</file>
+        <file>tubiao/mm.ico</file>
+        <file>tubiao/music1.png</file>
+        <file>tubiao/music3.ico</file>
+        <file>tubiao/pause01.png</file>
+        <file>tubiao/player01.png</file>
+        <file>tubiao/player02.png</file>
+        <file>tubiao/PlayerPause.png</file>
+        <file>tubiao/PlayerPlay.png</file>
+        <file>tubiao/ShunxuBof3.png</file>
+        <file>tubiao/xunhuanbof2.png</file>
+        <file>tubiao/player_volume_increase.png</file>
+        <file>tubiao/list.png</file>
+        <file>tubiao/music-copy.png</file>
+        <file>tubiao/yizhiding.png</file>
+        <file>tubiao/zhiding.png</file>
+        <file>tubiao/zuixiaohua.png</file>
+        <file>tubiao/playlist_icon.png</file>
+        <file>tubiao/playlist_icon_active.png</file>
+        <file>tubiao/theme.png</file>
+        <file>tubiao/loading.gif</file>
+        <file>tubiao/equalizer.png</file>
+        <file>tubiao/yin-liang-jia.png</file>
+        <file>tubiao/yin-liang-jian.png</file>
+        <file>tubiao/show.png</file>
+    </qresource>
+</RCC>

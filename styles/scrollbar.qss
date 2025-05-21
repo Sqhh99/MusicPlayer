@@ -1,0 +1,60 @@
+/* 滚动条样式 */
+
+/* Scrollbar Styling for Playlist */
+QScrollBar:vertical {
+    border: none;
+    background: #f7f7f7; 
+    width: 8px;
+    margin: 0px 0px 0px 0px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: #1DB954; /* 明显的绿色 */
+    min-height: 30px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #18a349;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+    width: 0px; /* Also set width to 0 for vertical */
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+     background: none;
+     height: 0px;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #f7f7f7;
+    height: 8px;
+    margin: 0px 0px 0px 0px;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal {
+    background: #1DB954; /* 明显的绿色 */
+    min-width: 30px;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #18a349;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+    width: 0px;
+    height: 0px; /* Also set height to 0 for horizontal */
+}
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    background: none;
+    width: 0px;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+} 
