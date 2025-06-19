@@ -44,11 +44,11 @@ PlayWidget::PlayWidget(QWidget *parent)
     , settingsAction(nullptr)
     , volumeMenu(nullptr)
     , playbackMenu(nullptr)
-    , recentFilesMenu(nullptr)
-    , volumePopup(new VolumePopup(this))
-    , playlistDelegate(new PlaylistItemDelegate(this))
-    , isAlwaysOnTop(false)
+    , recentFilesMenu(nullptr)    , volumePopup(new VolumePopup(this))
+    , playlistDelegate(new PlaylistItemDelegate(this))    , isAlwaysOnTop(false)
     , isDragging(false)
+    , isSliderDragging(false)
+    , progressSyncTimer(new QTimer(this))
     , titleBarLayout(nullptr)
     , minimizeButton(nullptr)
     , closeButton(nullptr)
@@ -132,6 +132,24 @@ PlayWidget::PlayWidget(QWidget *parent)
     // 设置通知计时器
     notificationTimer->setSingleShot(true);
     connect(notificationTimer, &QTimer::timeout, this, &PlayWidget::hideNotification);
+    
+    // 设置进度条同步定时器 - 每500ms检查一次进度条同步状态
+    progressSyncTimer->setInterval(500);
+    connect(progressSyncTimer, &QTimer::timeout, this, [this]() {
+        // 只有在播放状态且用户没有拖动进度条时才同步
+        if (musicPlayer && musicPlayer->player && musicPlayer->isPlaying() && !isSliderDragging && ui->playCourseSlider) {
+            qint64 currentPos = musicPlayer->player->position();
+            // 只有当位置差异较大时才更新，避免频繁更新
+            if (qAbs(ui->playCourseSlider->value() - currentPos) > 1000) {
+                ui->playCourseSlider->setValue(currentPos);
+            }
+        }
+    });
+    
+    // 在有播放器实例时启动定时器
+    if (musicPlayer) {
+        progressSyncTimer->start();
+    }
 }
 
 void PlayWidget::setupTitleBar()
@@ -490,15 +508,14 @@ void PlayWidget::initConn()
             if (ui->playCourseSlider) {
                 ui->playCourseSlider->setRange(0, duration);
             }
-        });
-
-        connect(musicPlayer, &MusicPlayer::IpositionChanged, this, [this](qint64 pos) {
+        });        connect(musicPlayer, &MusicPlayer::IpositionChanged, this, [this](qint64 pos) {
             if (ui->curLabel) {
                 ui->curLabel->setText(QString("%1:%2")
                     .arg(pos/1000/60, 2, 10, QChar('0'))
                     .arg(pos/1000%60, 2, 10, QChar('0')));
             }
-            if (ui->playCourseSlider) {
+            // 只有在用户没有拖动进度条时才更新进度条位置
+            if (ui->playCourseSlider && !isSliderDragging) {
                 ui->playCourseSlider->setValue(pos);
             }
         });
@@ -533,18 +550,51 @@ void PlayWidget::initConn()
                     ui->currentSongLabel->clear();
                 }
             });
-        }
-
-        // 进度条拖动
+        }        // 进度条拖动
         if (ui->playCourseSlider && musicPlayer->player) {
-            connect(ui->playCourseSlider, &QSlider::sliderMoved, 
-                   musicPlayer->player, &QMediaPlayer::setPosition);
+            // 用户开始拖动进度条
+            connect(ui->playCourseSlider, &QSlider::sliderPressed, this, [this]() {
+                isSliderDragging = true;
+            });
+            
+            // 用户释放进度条
+            connect(ui->playCourseSlider, &QSlider::sliderReleased, this, [this]() {
+                isSliderDragging = false;
+                // 释放时设置播放位置
+                if (musicPlayer && musicPlayer->player) {
+                    musicPlayer->player->setPosition(ui->playCourseSlider->value());
+                }
+            });
+            
+            // 拖动过程中实时更新时间显示（但不设置播放位置）
+            connect(ui->playCourseSlider, &QSlider::sliderMoved, this, [this](int value) {
+                if (ui->curLabel) {
+                    ui->curLabel->setText(QString("%1:%2")
+                        .arg(value/1000/60, 2, 10, QChar('0'))
+                        .arg(value/1000%60, 2, 10, QChar('0')));
+                }
+            });
         }
 
         // 连接媒体状态变化信号
         if (musicPlayer && musicPlayer->player) {
             connect(musicPlayer->player, &QMediaPlayer::mediaStatusChanged, 
                     this, &PlayWidget::onMediaStatusChanged);
+            
+            // 连接播放器错误信号，在错误时重置进度条状态
+            connect(musicPlayer->player, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &errorString) {
+                Q_UNUSED(error)
+                qDebug() << "Player error occurred:" << errorString;
+                // 重置进度条拖动状态
+                isSliderDragging = false;
+                // 重置进度条位置
+                if (ui->playCourseSlider) {
+                    ui->playCourseSlider->setValue(0);
+                }
+                if (ui->curLabel) {
+                    ui->curLabel->setText("00:00");
+                }
+            });
         }
     }
 
@@ -678,6 +728,14 @@ void PlayWidget::paintEvent(QPaintEvent *event)
 
 PlayWidget::~PlayWidget()
 {
+    // 停止定时器
+    if (progressSyncTimer) {
+        progressSyncTimer->stop();
+    }
+    if (notificationTimer) {
+        notificationTimer->stop();
+    }
+    
     // 移除事件过滤器
     if (qApp) {
         qApp->removeEventFilter(this);
@@ -1306,10 +1364,13 @@ void PlayWidget::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
         case QMediaPlayer::BufferingMedia:
             showBufferingIndicator(true);
             break;
-            
-        case QMediaPlayer::LoadedMedia:
+              case QMediaPlayer::LoadedMedia:
         case QMediaPlayer::BufferedMedia:
             showBufferingIndicator(false);
+            // 媒体加载完成时，确保进度条状态正确
+            if (ui->playCourseSlider && !isSliderDragging && musicPlayer && musicPlayer->player) {
+                ui->playCourseSlider->setValue(musicPlayer->player->position());
+            }
             break;
             
         case QMediaPlayer::InvalidMedia:

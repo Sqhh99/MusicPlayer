@@ -207,6 +207,10 @@ private:
     // Mouse tracking for window movement
     bool isDragging;
     QPoint dragStartPosition;
+    
+    // Progress slider state tracking
+    bool isSliderDragging; // 添加进度条拖动状态管理
+    QTimer *progressSyncTimer; // 进度条同步定时器
 
     // Icons for play/pause state
     QIcon playIcon;
