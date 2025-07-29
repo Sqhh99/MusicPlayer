@@ -7,11 +7,6 @@
 #include <QList>
 #include <QStringList>
 #include <QUrl>
-#include <QAudioDevice>
-#include <QMediaDevices>
-#include <QAudioFormat>
-#include <QAudioSink>
-#include <QBuffer>
 
 // 简单均衡器预设
 enum EqualizerPreset {

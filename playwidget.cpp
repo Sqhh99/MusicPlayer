@@ -53,8 +53,7 @@ PlayWidget::PlayWidget(QWidget *parent)
     , minimizeButton(nullptr)
     , closeButton(nullptr)
     , alwaysOnTopButton(nullptr)
-    , bufferingIndicator(nullptr)
-    , bufferingAnimation(nullptr)
+    // 缓冲指示器初始化已移除
     , playPauseShortcut(nullptr)
     , nextShortcut(nullptr)
     , prevShortcut(nullptr)
@@ -109,7 +108,7 @@ PlayWidget::PlayWidget(QWidget *parent)
     updateTrayTooltip();
     
     // 设置缓冲指示器
-    setupBufferingIndicator();
+    // setupBufferingIndicator(); // 已移除缓冲指示器功能
 
     // 设置键盘快捷键
     setupShortcuts();
@@ -1297,76 +1296,19 @@ void PlayWidget::hideNotification()
     }
 }
 
-void PlayWidget::setupBufferingIndicator()
-{
-    // 创建缓冲指示器标签
-    bufferingIndicator = new QLabel(this);
-    bufferingIndicator->setAlignment(Qt::AlignCenter);
-    bufferingIndicator->setMinimumSize(80, 80);
-    bufferingIndicator->setMaximumSize(80, 80);
-    
-    // 加载缓冲动画 - 这里假设有个loading.gif文件在资源中
-    // 如果没有，可以用代码创建一个简单的加载指示器
-    bufferingAnimation = new QMovie(":/tubiao/loading.gif");
-    if (bufferingAnimation->isValid()) {
-        bufferingAnimation->setScaledSize(QSize(64, 64));
-        bufferingIndicator->setMovie(bufferingAnimation);
-    } else {
-        // 如果没有图片资源，使用文本代替
-        bufferingIndicator->setText("缓冲中...");
-        bufferingIndicator->setStyleSheet("background-color: #1a1a1a; color: white; border-radius: 15px; border: 1px solid #444444;");
-    }
-    
-    // 设置样式
-    bufferingIndicator->setStyleSheet("background-color: #242424; border-radius: 15px; border: 1px solid #444444;");
-    
-    // 初始隐藏
-    bufferingIndicator->hide();
-    
-    // 放置在播放器区域中央
-    if (ui->playerWidget) {
-        ui->playerWidget->stackUnder(bufferingIndicator);
-    }
-}
+// setupBufferingIndicator 函数已移除
 
-void PlayWidget::showBufferingIndicator(bool show)
-{
-    if (!bufferingIndicator) return;
-    
-    if (show) {
-        // 居中显示
-        if (ui->playerWidget) {
-            QRect areaRect = ui->playerWidget->geometry();
-            int x = areaRect.x() + (areaRect.width() - bufferingIndicator->width()) / 2;
-            int y = areaRect.y() + (areaRect.height() - bufferingIndicator->height()) / 2;
-            bufferingIndicator->move(x, y);
-        }
-        
-        // 开始动画并显示
-        if (bufferingAnimation && bufferingAnimation->isValid()) {
-            bufferingAnimation->start();
-        }
-        bufferingIndicator->show();
-        bufferingIndicator->raise();
-    } else {
-        // 停止动画并隐藏
-        if (bufferingAnimation && bufferingAnimation->isValid()) {
-            bufferingAnimation->stop();
-        }
-        bufferingIndicator->hide();
-    }
-}
+// showBufferingIndicator 函数已移除
 
 void PlayWidget::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
     switch (status) {
         case QMediaPlayer::LoadingMedia:
         case QMediaPlayer::BufferingMedia:
-            showBufferingIndicator(true);
+            // 缓冲指示器已移除，不再显示加载动画
             break;
-              case QMediaPlayer::LoadedMedia:
+        case QMediaPlayer::LoadedMedia:
         case QMediaPlayer::BufferedMedia:
-            showBufferingIndicator(false);
             // 媒体加载完成时，确保进度条状态正确
             if (ui->playCourseSlider && !isSliderDragging && musicPlayer && musicPlayer->player) {
                 ui->playCourseSlider->setValue(musicPlayer->player->position());
@@ -1374,14 +1316,12 @@ void PlayWidget::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
             break;
             
         case QMediaPlayer::InvalidMedia:
-            showBufferingIndicator(false);
             if (ui->currentSongLabel) {
                 ui->currentSongLabel->setText("无效的媒体文件");
             }
             break;
             
         default:
-            showBufferingIndicator(false);
             break;
     }
 }

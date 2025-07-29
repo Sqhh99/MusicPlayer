@@ -240,11 +240,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 
-    QLabel *bufferingIndicator;    // 缓冲指示器
-    QMovie *bufferingAnimation;    // 缓冲动画
-    
-    void setupBufferingIndicator(); // 设置缓冲指示器
-    void showBufferingIndicator(bool show); // 显示或隐藏缓冲指示器
+    // 缓冲指示器相关代码已移除
 
     // 设置键盘快捷键
     void setupShortcuts();
