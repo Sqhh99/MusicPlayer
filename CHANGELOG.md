@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - Improved volume control popup interface
 - Style management system for easier theme customization
 - Better file path handling across operating systems
+- Extended audio format support: OGG/Vorbis, AAC, OPUS, WMA
+- Enhanced video format support: MP4, AVI, MKV, WebM, 3GP
+- Improved file selection dialog with categorized format filters
 
 ### Changed
 - Complete project restructuring from qmake to CMake

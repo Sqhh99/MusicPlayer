@@ -258,7 +258,7 @@ void PlayWidget::onOpenFileBtnClicked()
     QStringList filePaths = QFileDialog::getOpenFileNames(this, 
                                                         tr("Open Music Files"), 
                                                         msettings->loadLastPath(),
-                                                        tr("Music Files (*.mp3 *.flac *.wav *.m4a);;All Files (*)"));
+                                                        tr("Music Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma *.3gp *.mp4 *.mov *.avi *.mkv *.webm);;Audio Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma);;Video Files (*.mp4 *.mov *.avi *.mkv *.webm *.3gp);;All Files (*)"));
 
     if (!filePaths.isEmpty()) {
         if (ui->listWidget) ui->listWidget->clear();
