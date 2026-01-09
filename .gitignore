@@ -1,0 +1,40 @@
+# Qt-specific
+*.user
+*.autosave
+*.qmlc
+*.jsc
+*.qm
+.qt/
+.claude
+
+# CMake
+build
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CMakeLists.txt.user
+_deps/
+.cmake/
+
+# IDE-specific
+.idea/
+.vscode/
+*.swp
+*~
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Debug symbols
+*.pdb
+
+# Executables
+*.exe
+*.out
+*.app
+
+# macOS-specific
+.DS_Store 
