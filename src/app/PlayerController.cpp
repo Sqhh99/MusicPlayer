@@ -1,6 +1,5 @@
 #include "PlayerController.h"
 #include "PlaylistModel.h"
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QStandardPaths>
 
@@ -11,6 +10,12 @@ PlayerController::PlayerController(QObject *parent)
     , m_playlistModel(new PlaylistModel(this))
 {
     setupConnections();
+
+    QString lastPath = m_settings->loadLastPath();
+    if (lastPath.isEmpty()) {
+        lastPath = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+    }
+    m_lastFolder = QUrl::fromLocalFile(lastPath);
 
     // Load initial volume
     int savedVolume = m_settings->value("volume", 80).toInt();
@@ -232,28 +237,38 @@ void PlayerController::togglePlayPause()
 }
 
 // File operations
-void PlayerController::openFiles()
+void PlayerController::setPlaylistFromUrls(const QList<QUrl> &urls)
 {
-    QString lastPath = m_settings->loadLastPath();
-    if (lastPath.isEmpty()) {
-        lastPath = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+    if (urls.isEmpty()) {
+        return;
     }
 
-    QStringList filePaths = QFileDialog::getOpenFileNames(
-        nullptr,
-        tr("Open Music Files"),
-        lastPath,
-        tr("Music Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma *.3gp *.mp4 *.mov *.avi *.mkv *.webm);;"
-           "Audio Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma);;"
-           "Video Files (*.mp4 *.mov *.avi *.mkv *.webm *.3gp);;"
-           "All Files (*)")
-    );
+    QStringList filePaths;
+    filePaths.reserve(urls.size());
+    for (const QUrl &url : urls) {
+        if (url.isLocalFile()) {
+            filePaths.append(url.toLocalFile());
+        } else if (url.isValid()) {
+            filePaths.append(url.toString());
+        }
+    }
 
-    if (!filePaths.isEmpty()) {
-        m_musicPlayer->setPlaylist(filePaths);
-        m_playlistModel->setPlaylist(filePaths);
-        m_settings->saveMusicPaths(filePaths);
-        m_settings->saveLastPath(QFileInfo(filePaths.first()).absolutePath());
+    if (filePaths.isEmpty()) {
+        return;
+    }
+
+    m_musicPlayer->setPlaylist(filePaths);
+    m_playlistModel->setPlaylist(filePaths);
+    m_settings->saveMusicPaths(filePaths);
+
+    const QString lastPath = QFileInfo(filePaths.first()).absolutePath();
+    if (!lastPath.isEmpty()) {
+        m_settings->saveLastPath(lastPath);
+        const QUrl newFolder = QUrl::fromLocalFile(lastPath);
+        if (m_lastFolder != newFolder) {
+            m_lastFolder = newFolder;
+            emit lastFolderChanged();
+        }
     }
 }
 
@@ -265,6 +280,11 @@ QStringList PlayerController::loadSavedPlaylist()
         m_playlistModel->setPlaylist(savedPaths);
     }
     return savedPaths;
+}
+
+QUrl PlayerController::lastFolder() const
+{
+    return m_lastFolder;
 }
 
 // Private slots

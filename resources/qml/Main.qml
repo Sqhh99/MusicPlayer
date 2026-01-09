@@ -2,6 +2,7 @@ import QtQuick
 import MusicPlayer
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.platform as Platform
 
 ApplicationWindow {
     id: root
@@ -20,6 +21,18 @@ ApplicationWindow {
     // Properties for playlist visibility
     property bool playlistVisible: false
     property bool isAlwaysOnTop: false
+    property string trayTooltip: {
+        var text = "Music Player"
+        if (playerController.currentSong.length > 0) {
+            text = playerController.currentSong
+            if (playerController.isPlaying) {
+                text += " - 播放中"
+            } else if (playerController.isPaused) {
+                text += " - 已暂停"
+            }
+        }
+        return text
+    }
 
     // Window dragging
     property point dragStartPosition
@@ -135,6 +148,12 @@ ApplicationWindow {
         notificationTimer.restart()
     }
 
+    function showMainWindow() {
+        root.show()
+        root.raise()
+        root.requestActivate()
+    }
+
     Timer {
         id: notificationTimer
         interval: 3000
@@ -200,6 +219,92 @@ ApplicationWindow {
     // Load saved playlist on startup
     Component.onCompleted: {
         playerController.loadSavedPlaylist()
+    }
+
+    Platform.SystemTrayIcon {
+        id: trayIcon
+        visible: available
+        icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/listen1.ico"
+        tooltip: trayTooltip
+        menu: Platform.Menu {
+            Platform.MenuItem {
+                text: root.visible ? "隐藏窗口" : "显示窗口"
+                onTriggered: {
+                    if (root.visible) {
+                        root.hide()
+                    } else {
+                        root.showMainWindow()
+                    }
+                }
+            }
+            Platform.MenuSeparator { }
+
+            Platform.MenuItem {
+                text: playerController.isPlaying ? "暂停" : "播放"
+                onTriggered: playerController.togglePlayPause()
+            }
+            Platform.MenuItem {
+                text: "停止"
+                onTriggered: playerController.stop()
+            }
+
+            Platform.MenuSeparator { }
+
+            Platform.MenuItem {
+                text: "上一首"
+                onTriggered: playerController.previous()
+            }
+            Platform.MenuItem {
+                text: "下一首"
+                onTriggered: playerController.next()
+            }
+
+            Platform.MenuSeparator { }
+
+            Platform.Menu {
+                title: "音量"
+                Platform.MenuItem {
+                    text: "增加音量"
+                    onTriggered: playerController.setVolume(Math.min(100, playerController.volume + 5))
+                }
+                Platform.MenuItem {
+                    text: "减小音量"
+                    onTriggered: playerController.setVolume(Math.max(0, playerController.volume - 5))
+                }
+                Platform.MenuSeparator { }
+                Platform.MenuItem {
+                    text: "静音"
+                    checkable: true
+                    checked: playerController.isMuted
+                    onTriggered: playerController.setMuted(!playerController.isMuted)
+                }
+            }
+
+            Platform.MenuSeparator { }
+
+            Platform.MenuItem {
+                text: "循环播放"
+                checkable: true
+                checked: playerController.isLooping
+                onTriggered: playerController.setLooping(!playerController.isLooping)
+            }
+
+            Platform.MenuSeparator { }
+
+            Platform.MenuItem {
+                text: "退出"
+                onTriggered: Qt.quit()
+            }
+        }
+
+        onActivated: (reason) => {
+            if (reason === Platform.SystemTrayIcon.Trigger
+                || reason === Platform.SystemTrayIcon.DoubleClick) {
+                root.showMainWindow()
+            } else if (reason === Platform.SystemTrayIcon.MiddleClick) {
+                playerController.togglePlayPause()
+            }
+        }
     }
 }
 

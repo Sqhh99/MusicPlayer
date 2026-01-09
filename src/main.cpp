@@ -1,4 +1,4 @@
-#include <QApplication>
+#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
@@ -10,14 +10,14 @@
 
 #include "app/PlayerController.h"
 #include "app/PlaylistModel.h"
-#include "app/TrayIconManager.h"
 
 // Single instance server name
 #define SERVER_NAME "MusicPlayerQMLSingleInstance"
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
+    QGuiApplication::setQuitOnLastWindowClosed(false);
     
     // Set application info
     QGuiApplication::setApplicationName("MusicPlayer");
@@ -88,20 +88,6 @@ int main(int argc, char *argv[])
         qCritical() << "Failed to get main window";
         return -1;
     }
-    
-    // Set up tray icon manager
-    TrayIconManager *trayManager = new TrayIconManager(controller, &app);
-    
-    // Connect tray signals to window
-    QObject::connect(trayManager, &TrayIconManager::showWindowRequested, mainWindow, [mainWindow]() {
-        mainWindow->show();
-        mainWindow->raise();
-        mainWindow->requestActivate();
-    });
-    
-    QObject::connect(trayManager, &TrayIconManager::quitRequested, &app, &QGuiApplication::quit);
-    
-    trayManager->show();
     
     // Handle single instance activation
     QObject::connect(server, &QLocalServer::newConnection, [server, mainWindow]() {

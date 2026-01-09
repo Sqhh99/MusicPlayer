@@ -2,6 +2,7 @@ import QtQuick
 import MusicPlayer
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 
 Item {
@@ -105,7 +106,7 @@ Item {
             ControlButton {
                 iconSource: "qrc:/qt/qml/MusicPlayer/resources/icons/File1.png"
                 toolTipText: "打开文件"
-                onClicked: playerController.openFiles()
+                onClicked: fileDialog.open()
             }
 
             // Toggle playlist button
@@ -166,6 +167,20 @@ Item {
         id: volumePopup
         x: volumeButton.x + (volumeButton.width - width) / 2
         y: volumeButton.y - height - 10
+    }
+
+    FileDialog {
+        id: fileDialog
+        title: "打开音乐文件"
+        fileMode: FileDialog.OpenFiles
+        currentFolder: playerController.lastFolder
+        nameFilters: [
+            "Music Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma *.3gp *.mp4 *.mov *.avi *.mkv *.webm)",
+            "Audio Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma)",
+            "Video Files (*.mp4 *.mov *.avi *.mkv *.webm *.3gp)",
+            "All Files (*)"
+        ]
+        onAccepted: playerController.setPlaylistFromUrls(selectedFiles)
     }
 }
 

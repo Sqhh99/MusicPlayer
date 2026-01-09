@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QMediaPlayer>
+#include <QUrl>
 #include "../backend/musicplayer.h"
 #include "../backend/musicsettings.h"
 #include "PlaylistModel.h"
@@ -40,6 +41,7 @@ class PlayerController : public QObject
     Q_PROPERTY(int bassLevel READ bassLevel WRITE setBassLevel NOTIFY bassLevelChanged)
     Q_PROPERTY(int midLevel READ midLevel WRITE setMidLevel NOTIFY midLevelChanged)
     Q_PROPERTY(int trebleLevel READ trebleLevel WRITE setTrebleLevel NOTIFY trebleLevelChanged)
+    Q_PROPERTY(QUrl lastFolder READ lastFolder NOTIFY lastFolderChanged)
 
 public:
     explicit PlayerController(QObject *parent = nullptr);
@@ -80,8 +82,7 @@ public:
     int trebleLevel() const;
     void setTrebleLevel(int level);
 
-    // Access to internal player for tray icon manager
-    MusicPlayer* musicPlayer() const { return m_musicPlayer; }
+    QUrl lastFolder() const;
 
 public slots:
     // Playback control
@@ -95,7 +96,7 @@ public slots:
     void togglePlayPause();
 
     // File operations
-    void openFiles();
+    void setPlaylistFromUrls(const QList<QUrl> &urls);
     QStringList loadSavedPlaylist();
 
 signals:
@@ -113,6 +114,7 @@ signals:
     void midLevelChanged();
     void trebleLevelChanged();
     void errorOccurred(const QString &message);
+    void lastFolderChanged();
 
 private slots:
     void onPlaybackStateChanged(QMediaPlayer::PlaybackState state);
@@ -129,6 +131,7 @@ private:
     qint64 m_position = 0;
     qint64 m_duration = 0;
     QString m_currentSong;
+    QUrl m_lastFolder;
 
     QString formatTime(qint64 ms) const;
     void setupConnections();

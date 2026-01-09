@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
 # Find Qt packages
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2 Multimedia Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2 Multimedia)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -25,8 +25,6 @@ set(APP_SOURCES
     src/app/PlayerController.h
     src/app/PlaylistModel.cpp
     src/app/PlaylistModel.h
-    src/app/TrayIconManager.cpp
-    src/app/TrayIconManager.h
 )
 
 # Windows icon resource
@@ -81,7 +79,6 @@ target_link_libraries(MusicPlayer PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Multimedia
-    Qt6::Widgets
 )
 
 # Include directories
