@@ -4,6 +4,10 @@
 #include <QAbstractListModel>
 #include <QStringList>
 #include <QFileInfo>
+#include <QVector>
+
+class QMediaPlayer;
+class QAudioOutput;
 
 class PlaylistModel : public QAbstractListModel
 {
@@ -14,7 +18,8 @@ public:
     enum Roles {
         FileNameRole = Qt::UserRole + 1,
         FilePathRole,
-        IndexRole
+        IndexRole,
+        DurationTextRole
     };
 
     explicit PlaylistModel(QObject *parent = nullptr);
@@ -30,6 +35,7 @@ public:
     Q_INVOKABLE void clear();
     Q_INVOKABLE QString getFileName(int index) const;
     Q_INVOKABLE QString getFilePath(int index) const;
+    Q_INVOKABLE QString getDurationText(int index) const;
 
 signals:
     void countChanged();
@@ -37,6 +43,18 @@ signals:
 private:
     QStringList m_filePaths;
     QStringList m_fileNames;
+    QStringList m_durationTexts;
+
+    QMediaPlayer *m_probePlayer = nullptr;
+    QAudioOutput *m_probeAudio = nullptr;
+    int m_probeIndex = -1;
+    int m_probeToken = 0;
+    QVector<bool> m_durationReady;
+
+    void startDurationProbe();
+    void probeNext();
+    void setDuration(int index, qint64 durationMs);
+    QString formatTime(qint64 ms) const;
 };
 
 #endif // PLAYLISTMODEL_H

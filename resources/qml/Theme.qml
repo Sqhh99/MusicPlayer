@@ -3,59 +3,81 @@ import QtQuick
 import MusicPlayer
 
 QtObject {
-    // Colors
-    readonly property color background: "#f0f0f0"
-    readonly property color backgroundDark: "#e0e0e0"
-    readonly property color border: "#e0e0e0"
-    readonly property color accent: "#1DB954"
-    readonly property color accentHover: "#18a349"
-    readonly property color accentDark: "#15803d"
-    readonly property color textPrimary: "#303030"
-    readonly property color textSecondary: "#777777"
-    readonly property color textLight: "#555555"
-    readonly property color white: "#ffffff"
-    readonly property color transparent: "transparent"
-    readonly property color sliderTrack: "#cccccc"
-    readonly property color sliderHandle: "#333333"
-    readonly property color sliderHandleHover: "#000000"
-    readonly property color hoverBg: "#e0e0e0"
-    readonly property color pressedBg: "#d0d0d0"
-    readonly property color notificationBg: "#323232"
-    readonly property color notificationBorder: "#444444"
+    readonly property string fontFamily: "Plus Jakarta Sans"
+    readonly property string fontFamilyMono: "JetBrains Mono"
 
-    // Fonts
-    readonly property int fontSizeSmall: 9
-    readonly property int fontSizeNormal: 10
-    readonly property int fontSizeMedium: 12
-    readonly property int fontSizeLarge: 14
+    readonly property color backgroundStart: "#f3f4f6"
+    readonly property color backgroundEnd: "#f3f4f6"
+    readonly property color glowBlue: "#bfdbfe"
+    readonly property color glowRose: "#e9d5ff"
 
-    // Dimensions
-    readonly property int buttonSize: 36
-    readonly property int buttonSizeSmall: 20
-    readonly property int iconSize: 24
-    readonly property int iconSizeSmall: 16
-    readonly property int borderRadius: 8
-    readonly property int borderRadiusSmall: 4
-    readonly property int sliderHeight: 4
-    readonly property int sliderHandleSize: 12
-    readonly property int sliderHandleSizeHover: 14
+    readonly property color cardBg: "#ffffff"
+    readonly property color cardBorder: "#e5e7eb"
+    readonly property color cardShadow: "#0000001a"
 
-    // Spacing
-    readonly property int spacingSmall: 5
-    readonly property int spacingNormal: 8
-    readonly property int spacingLarge: 10
-    readonly property int marginNormal: 10
-    readonly property int marginSmall: 5
+    readonly property color textPrimary: "#111827"
+    readonly property color textSecondary: "#1f2937"
+    readonly property color textSubtle: "#6b7280"
+    readonly property color textMuted: "#9ca3af"
 
-    // Animation
-    readonly property int animationDuration: 150
-    readonly property int animationDurationFast: 100
+    readonly property color accent: "#3b82f6"
+    readonly property color accentSoft: "#eff6ff"
+    readonly property color accentDark: "#1d4ed8"
 
-    // Window
-    readonly property int windowWidth: 480
-    readonly property int windowHeight: 150
-    readonly property int windowMinWidth: 400
-    readonly property int windowMinHeight: 120
-    readonly property int playlistHeight: 200
+    readonly property color controlBg: "#f8fafc"
+    readonly property color hoverBg: "#0000000a"
+
+    readonly property color trackBg: "#e5e7eb"
+    readonly property color trackFill: "#1f2937"
+    readonly property color handle: "#1f2937"
+
+    readonly property color overlayBg: "#ffffff"
+    readonly property color overlayBorder: "#f3f4f6"
+
+    readonly property int fullWidth: 980
+    readonly property int fullHeight: 712
+    readonly property int miniWidth: 558
+    readonly property int miniHeight: 205
+    readonly property int minWidth: 980
+    readonly property int minHeight: 712
+
+    readonly property int outerPadding: 40
+    readonly property int outerPaddingMini: 18
+    readonly property int radiusLarge: 32
+    readonly property int radiusMini: 24
+
+    readonly property int albumSize: 300
+    readonly property int albumSizeMini: 128
+    readonly property int albumRadius: 36
+    readonly property int albumRadiusMini: 22
+    readonly property int albumColumnWidth: 396
+    readonly property int columnSpacing: 32
+    readonly property int titleSize: 34
+    readonly property int artistSize: 17
+    readonly property int titleSizeMini: 18
+    readonly property int artistSizeMini: 12
+    readonly property int controlSizeXl: 68
+    readonly property int controlSizeMd: 48
+    readonly property int controlSizeMiniPlay: 44
+    readonly property int progressHeight: 6
+    readonly property int progressHeightMini: 5
+    readonly property int bottomBarHeight: 40
+    readonly property int headerInset: 64
+
+    readonly property int iconSizeSm: 14
+    readonly property int iconSize: 18
+    readonly property int iconSizeLg: 26
+
+    readonly property int controlSize: 40
+    readonly property int controlSizeSm: 30
+    readonly property int controlSizeLg: 72
+
+    readonly property int spacingSm: 6
+    readonly property int spacingMd: 10
+    readonly property int spacingLg: 16
+    readonly property int spacingXl: 24
+
+    readonly property int dragHeight: 48
+
+    readonly property string iconPath: "qrc:/qt/qml/MusicPlayer/resources/icons/"
 }
-

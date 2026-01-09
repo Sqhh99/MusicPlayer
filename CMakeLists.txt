@@ -49,29 +49,35 @@ qt_add_qml_module(MusicPlayer
     VERSION 1.0
     QML_FILES
         resources/qml/Main.qml
-        resources/qml/TitleBar.qml
-        resources/qml/PlayerControls.qml
-        resources/qml/ProgressSlider.qml
-        resources/qml/VolumePopup.qml
-        resources/qml/PlaylistView.qml
-        resources/qml/EqualizerDialog.qml
         resources/qml/Theme.qml
+        resources/qml/components/IconButton.qml
+        resources/qml/components/ProgressBar.qml
+        resources/qml/components/AlbumArt.qml
+        resources/qml/components/EqualizerBars.qml
+        resources/qml/components/WindowControls.qml
+        resources/qml/components/VolumeControl.qml
+        resources/qml/components/LyricsPanel.qml
+        resources/qml/components/PlaylistOverlay.qml
+        resources/qml/components/EqualizerPanel.qml
+        resources/qml/components/MiniPlayer.qml
+        resources/qml/components/FullPlayer.qml
     RESOURCES
         resources/icons/listen1.ico
-        resources/icons/pause01.png
-        resources/icons/player01.png
-        resources/icons/File1.png
-        resources/icons/icon_next.png
-        resources/icons/icon_previous.png
-        resources/icons/player_volume_increase.png
-        resources/icons/ShunxuBof3.png
-        resources/icons/xunhuanbof2.png
-        resources/icons/playlist_icon.png
-        resources/icons/playlist_icon_active.png
-        resources/icons/zhiding.png
-        resources/icons/yizhiding.png
-        resources/icons/zuixiaohua.png
-        resources/icons/equalizer.png
+        resources/icons/chevron-down.png
+        resources/icons/list-music.png
+        resources/icons/maximize-2.png
+        resources/icons/mic-vocal.png
+        resources/icons/minus.png
+        resources/icons/pause.png
+        resources/icons/play.png
+        resources/icons/repeat.png
+        resources/icons/shuffle.png
+        resources/icons/skip-back.png
+        resources/icons/skip-forward.png
+        resources/icons/sliders-vertical.png
+        resources/icons/volume-2.png
+        resources/icons/volume-x.png
+        resources/icons/x.png
 )
 
 # Link libraries
