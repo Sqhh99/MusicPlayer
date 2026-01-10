@@ -16,9 +16,35 @@ Item {
     implicitWidth: controlsRow.implicitWidth
     implicitHeight: controlsRow.implicitHeight
 
+    property bool showControls: true
+    property int hideDelay: 2000
+
+    Timer {
+        id: hideTimer
+        interval: root.hideDelay
+        onTriggered: root.showControls = false
+    }
+
+    MouseArea {
+        id: hoverArea
+        anchors.fill: controlsRow
+        anchors.margins: -10
+        hoverEnabled: true
+        onEntered: {
+            root.showControls = true
+            hideTimer.stop()
+        }
+        onExited: hideTimer.start()
+    }
+
     Row {
         id: controlsRow
         spacing: 6
+        opacity: root.showControls ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
+        }
 
         IconButton {
             size: 26

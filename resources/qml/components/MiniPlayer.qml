@@ -38,6 +38,7 @@ Item {
             Layout.fillHeight: true
             spacing: 5
             Layout.alignment: Qt.AlignVCenter
+            Layout.topMargin: 15
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -66,6 +67,7 @@ Item {
 
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.topMargin: 11
                 spacing: 3
 
                 ProgressBar {
