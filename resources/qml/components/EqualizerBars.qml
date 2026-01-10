@@ -5,23 +5,29 @@ Item {
     id: root
 
     property bool playing: false
-    property int barCount: Math.max(20, Math.round(width / 10))
+    property int barCount: Math.max(16, Math.round(width / 12))
     property int barSpacing: 3
-    readonly property real barWidth: Math.max(2, (width - (barSpacing * (barCount - 1))) / barCount)
+    readonly property real barWidth: Math.max(3, (width - (barSpacing * (barCount - 1))) / barCount)
     property color barColor: Theme.textPrimary
 
     height: 24
 
+    // Faster timer for more responsive animation
     Timer {
         id: pulseTimer
-        interval: 320
+        interval: 100 + Math.random() * 50  // 100-150ms for more natural feel
         repeat: true
         running: root.playing
         onTriggered: {
+            interval = 80 + Math.random() * 70  // Vary timing for organic feel
             for (var i = 0; i < barsRepeater.count; i += 1) {
                 var item = barsRepeater.itemAt(i)
                 if (item) {
-                    item.targetHeight = Math.max(6, Math.random() * root.height)
+                    // More dynamic range based on position
+                    var baseHeight = 4 + Math.random() * (root.height - 4)
+                    // Add wave effect - bars near center tend to be taller
+                    var centerFactor = 1 - Math.abs(i - barCount / 2) / (barCount / 2) * 0.3
+                    item.targetHeight = baseHeight * centerFactor + 2
                 }
             }
         }
@@ -41,16 +47,19 @@ Item {
             Rectangle {
                 id: bar
                 width: root.barWidth
-                height: 12
-                radius: 2
+                height: 8 + Math.random() * 8  // Random initial heights
+                radius: Math.max(1.5, root.barWidth * 0.3)
                 color: root.barColor
-                opacity: 0.75
+                opacity: 0.7 + Math.random() * 0.3
 
                 property real targetHeight: height
                 onTargetHeightChanged: height = targetHeight
 
                 Behavior on height {
-                    NumberAnimation { duration: 380; easing.type: Easing.InOutQuad }
+                    NumberAnimation { 
+                        duration: 120 + Math.random() * 60
+                        easing.type: Easing.OutQuad 
+                    }
                 }
 
                 anchors.bottom: parent.bottom

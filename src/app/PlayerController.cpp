@@ -1,13 +1,16 @@
 #include "PlayerController.h"
 #include "PlaylistModel.h"
 #include <QFileInfo>
+#include <QFile>
 #include <QStandardPaths>
+
 
 PlayerController::PlayerController(QObject *parent)
     : QObject(parent)
     , m_musicPlayer(new MusicPlayer(this))
     , m_settings(new MusicSettings(this))
     , m_playlistModel(new PlaylistModel(this))
+    , m_lyricsParser(new LyricsParser(this))
 {
     setupConnections();
 
@@ -295,6 +298,21 @@ QUrl PlayerController::lastFolder() const
     return m_lastFolder;
 }
 
+QUrl PlayerController::albumArtUrl() const
+{
+    return m_albumArtUrl;
+}
+
+QStringList PlayerController::lyrics() const
+{
+    return m_lyricsParser->getLyricsTexts();
+}
+
+int PlayerController::currentLyricIndex() const
+{
+    return m_currentLyricIndex;
+}
+
 // Private slots
 void PlayerController::onPlaybackStateChanged(QMediaPlayer::PlaybackState state)
 {
@@ -308,6 +326,15 @@ void PlayerController::onPositionChanged(qint64 pos)
     if (m_position != pos) {
         m_position = pos;
         emit positionChanged();
+    }
+
+    // Update current lyric index
+    if (!m_lyricsParser->isEmpty()) {
+        int newIndex = m_lyricsParser->getCurrentLineIndex(pos);
+        if (newIndex != m_currentLyricIndex) {
+            m_currentLyricIndex = newIndex;
+            emit currentLyricIndexChanged();
+        }
     }
 }
 
@@ -328,9 +355,60 @@ void PlayerController::onMusicStart(int index)
         emit currentSongChanged();
     }
     emit currentIndexChanged();
+
+    // Load metadata (cover art and lyrics) for the new song
+    updateMediaMetadata();
 }
 
 void PlayerController::onPlayerError(const QString &errorMessage)
 {
     emit errorOccurred(errorMessage);
+}
+
+void PlayerController::updateMediaMetadata()
+{
+    // Reset lyric index
+    m_currentLyricIndex = -1;
+    emit currentLyricIndexChanged();
+
+    // Get the current audio file path
+    int idx = m_musicPlayer->currentIndex();
+    QStringList playlist = m_musicPlayer->getPlaylist();
+    if (idx < 0 || idx >= playlist.size()) {
+        // Clear metadata if no valid song
+        m_albumArtUrl = QUrl();
+        emit albumArtUrlChanged();
+        m_lyricsParser->clear();
+        emit lyricsChanged();
+        return;
+    }
+
+    QString audioPath = playlist.at(idx);
+    QFileInfo audioFile(audioPath);
+    QString baseName = audioFile.completeBaseName();
+    QString dir = audioFile.absolutePath();
+
+    // Find cover art (check for same base name with image extensions)
+    QUrl newArtUrl;
+    QStringList imageExtensions = {"jpg", "jpeg", "png", "webp"};
+    for (const QString &ext : imageExtensions) {
+        QString coverPath = dir + "/" + baseName + "." + ext;
+        if (QFile::exists(coverPath)) {
+            newArtUrl = QUrl::fromLocalFile(coverPath);
+            break;
+        }
+    }
+
+    if (m_albumArtUrl != newArtUrl) {
+        m_albumArtUrl = newArtUrl;
+        emit albumArtUrlChanged();
+    }
+
+    // Find and parse lyrics file
+    QString lrcPath = dir + "/" + baseName + ".lrc";
+    m_lyricsParser->clear();
+    if (QFile::exists(lrcPath)) {
+        m_lyricsParser->loadFromFile(lrcPath);
+    }
+    emit lyricsChanged();
 }

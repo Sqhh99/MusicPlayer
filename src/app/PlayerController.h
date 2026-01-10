@@ -4,9 +4,10 @@
 #include <QObject>
 #include <QUrl>
 #include <QMediaPlayer>
-#include <QUrl>
+#include <QStringList>
 #include "../backend/musicplayer.h"
 #include "../backend/musicsettings.h"
+#include "../backend/LyricsParser.h"
 #include "PlaylistModel.h"
 
 
@@ -42,6 +43,11 @@ class PlayerController : public QObject
     Q_PROPERTY(int midLevel READ midLevel WRITE setMidLevel NOTIFY midLevelChanged)
     Q_PROPERTY(int trebleLevel READ trebleLevel WRITE setTrebleLevel NOTIFY trebleLevelChanged)
     Q_PROPERTY(QUrl lastFolder READ lastFolder NOTIFY lastFolderChanged)
+
+    // Album art and lyrics
+    Q_PROPERTY(QUrl albumArtUrl READ albumArtUrl NOTIFY albumArtUrlChanged)
+    Q_PROPERTY(QStringList lyrics READ lyrics NOTIFY lyricsChanged)
+    Q_PROPERTY(int currentLyricIndex READ currentLyricIndex NOTIFY currentLyricIndexChanged)
 
 public:
     explicit PlayerController(QObject *parent = nullptr);
@@ -84,6 +90,11 @@ public:
 
     QUrl lastFolder() const;
 
+    // Album art and lyrics
+    QUrl albumArtUrl() const;
+    QStringList lyrics() const;
+    int currentLyricIndex() const;
+
 public slots:
     // Playback control
     void play();
@@ -115,6 +126,9 @@ signals:
     void trebleLevelChanged();
     void errorOccurred(const QString &message);
     void lastFolderChanged();
+    void albumArtUrlChanged();
+    void lyricsChanged();
+    void currentLyricIndexChanged();
 
 private slots:
     void onPlaybackStateChanged(QMediaPlayer::PlaybackState state);
@@ -127,14 +141,18 @@ private:
     MusicPlayer *m_musicPlayer;
     MusicSettings *m_settings;
     PlaylistModel *m_playlistModel;
+    LyricsParser *m_lyricsParser;
 
     qint64 m_position = 0;
     qint64 m_duration = 0;
     QString m_currentSong;
     QUrl m_lastFolder;
+    QUrl m_albumArtUrl;
+    int m_currentLyricIndex = -1;
 
     QString formatTime(qint64 ms) const;
     void setupConnections();
+    void updateMediaMetadata();
 };
 
 #endif // PLAYERCONTROLLER_H

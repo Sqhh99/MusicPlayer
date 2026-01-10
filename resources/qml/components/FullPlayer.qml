@@ -41,6 +41,7 @@ Item {
                     cornerRadius: Theme.albumRadius
                     title: root.controller ? root.controller.currentSong : ""
                     playing: root.controller ? root.controller.isPlaying : false
+                    source: root.controller ? root.controller.albumArtUrl : ""
                 }
 
                 EqualizerBars {
@@ -99,7 +100,8 @@ Item {
                     LyricsPanel {
                         id: lyricsPanel
                         anchors.fill: parent
-                        lyrics: root.lyrics
+                        lyrics: root.controller ? root.controller.lyrics : []
+                        highlightIndex: root.controller ? root.controller.currentLyricIndex : -1
                         visible: root.showLyrics
                         opacity: root.showLyrics ? 1 : 0
                         onBackRequested: root.toggleLyrics()

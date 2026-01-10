@@ -41,12 +41,14 @@ Rectangle {
     property point dragStartPos: Qt.point(0, 0)
     property bool dragging: false
 
-    Item {
+    // Header area
+    Rectangle {
         id: header
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         height: root.headerHeight
+        color: "transparent"
 
         Text {
             id: headerTitle
@@ -60,31 +62,52 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        IconButton {
+        // Close button - using separate MouseArea with containsMouse
+        Rectangle {
             id: closeButton
-            size: 30
-            iconSize: 12
-            iconSource: Theme.iconPath + "x.png"
-            iconOpacity: 0.6
-            hoverColor: "#f3f4f6"
-            pressedColor: "#e5e7eb"
+            width: 30
+            height: 30
+            radius: 8
             anchors.right: parent.right
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
-            z: 2
-            onClicked: root.closeRequested()
+            color: closeButtonArea.pressed ? "#e5e7eb" : (closeButtonArea.containsMouse ? "#f3f4f6" : "transparent")
+            z: 10
+
+            Image {
+                anchors.centerIn: parent
+                source: Theme.iconPath + "x.png"
+                width: 12
+                height: 12
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                opacity: closeButtonArea.containsMouse ? 0.9 : 0.6
+            }
+
+            MouseArea {
+                id: closeButtonArea
+                anchors.fill: parent
+                anchors.margins: -5  // Extend hit area slightly
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                
+                onClicked: {
+                    root.closeRequested()
+                }
+            }
         }
 
+        // Drag area - explicitly sized to not overlap close button
         MouseArea {
             id: dragArea
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.rightMargin: closeButton.width + closeButton.anchors.rightMargin + 8
+            width: parent.width - closeButton.width - 40  // Leave space
             hoverEnabled: true
             cursorShape: Qt.SizeAllCursor
             z: 1
+            
             onPressed: (mouse) => {
                 if (mouse.button !== Qt.LeftButton) {
                     return
@@ -92,7 +115,6 @@ Rectangle {
                 if (root.appWindow) {
                     root.dragging = true
                     root.dragStartPos = Qt.point(mouse.x, mouse.y)
-                    mouse.accepted = true
                 }
             }
             onPositionChanged: (mouse) => {

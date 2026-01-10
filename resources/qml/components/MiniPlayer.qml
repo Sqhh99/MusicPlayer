@@ -14,25 +14,29 @@ Item {
     signal toggleShuffle()
 
     width: parent ? parent.width : 520
-    height: parent ? parent.height : 190
+    height: parent ? parent.height : 180
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: Theme.outerPaddingMini
-        spacing: 20
+        anchors.leftMargin: 22  // Larger to balance album art shadow effect
+        anchors.rightMargin: Theme.outerPaddingMini
+        anchors.topMargin: Theme.outerPaddingMini
+        anchors.bottomMargin: Theme.outerPaddingMini
+        spacing: 18
 
         AlbumArt {
             size: Theme.albumSizeMini
             cornerRadius: Theme.albumRadiusMini
             title: root.title
             playing: root.controller ? root.controller.isPlaying : false
+            source: root.controller ? root.controller.albumArtUrl : ""
             Layout.alignment: Qt.AlignVCenter
         }
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 10
+            spacing: 5
             Layout.alignment: Qt.AlignVCenter
 
             ColumnLayout {
@@ -62,7 +66,7 @@ Item {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 4
+                spacing: 3
 
                 ProgressBar {
                     Layout.fillWidth: true
@@ -121,8 +125,8 @@ Item {
                 Item { Layout.fillWidth: true }
 
                 IconButton {
-                    size: 36
-                    iconSize: 18
+                    size: 34
+                    iconSize: 16
                     iconOpacity: 0.7
                     iconSource: Theme.iconPath + "skip-back.png"
                     onClicked: root.controller ? root.controller.previous() : undefined
@@ -141,8 +145,8 @@ Item {
                 }
 
                 IconButton {
-                    size: 36
-                    iconSize: 18
+                    size: 34
+                    iconSize: 16
                     iconOpacity: 0.7
                     iconSource: Theme.iconPath + "skip-forward.png"
                     onClicked: root.controller ? root.controller.next() : undefined

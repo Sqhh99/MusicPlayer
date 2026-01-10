@@ -17,6 +17,8 @@ set(BACKEND_SOURCES
     src/backend/musicplayer.h
     src/backend/musicsettings.cpp
     src/backend/musicsettings.h
+    src/backend/LyricsParser.cpp
+    src/backend/LyricsParser.h
 )
 
 # App/Bridge sources (C++ <-> QML bridge layer)
@@ -78,6 +80,7 @@ qt_add_qml_module(MusicPlayer
         resources/icons/volume-2.png
         resources/icons/volume-x.png
         resources/icons/x.png
+        resources/icons/pin.png
 )
 
 # Link libraries

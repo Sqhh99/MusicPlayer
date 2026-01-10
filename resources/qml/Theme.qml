@@ -37,12 +37,12 @@ QtObject {
     readonly property int fullWidth: 980
     readonly property int fullHeight: 712
     readonly property int miniWidth: 558
-    readonly property int miniHeight: 205
+    readonly property int miniHeight: 180
     readonly property int minWidth: 980
     readonly property int minHeight: 712
 
     readonly property int outerPadding: 40
-    readonly property int outerPaddingMini: 18
+    readonly property int outerPaddingMini: 14
     readonly property int radiusLarge: 32
     readonly property int radiusMini: 24
 

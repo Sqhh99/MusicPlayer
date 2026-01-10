@@ -13,6 +13,7 @@ Item {
     width: size
     height: size
 
+    // Shadow only when no image loaded
     Rectangle {
         id: shadow
         anchors.centerIn: parent
@@ -21,24 +22,28 @@ Item {
         radius: root.cornerRadius > 0 ? root.cornerRadius + 6 : root.width * 0.18
         color: "#000000"
         opacity: root.playing ? 0.10 : 0.06
+        visible: root.source.length === 0
     }
 
+    // Cover container with clipping for rounded corners
     Rectangle {
         id: cover
         anchors.centerIn: parent
         width: root.width
         height: root.height
         radius: root.cornerRadius > 0 ? root.cornerRadius : Math.max(18, Math.round(root.width * 0.14))
-        color: "#f3f4f6"
-        border.color: "#e5e7eb"
-        border.width: 1
+        color: root.source.length > 0 ? "transparent" : "#f3f4f6"
+        border.color: root.source.length > 0 ? "transparent" : "#e5e7eb"
+        border.width: root.source.length > 0 ? 0 : 1
         clip: true
         scale: root.playing ? 1.0 : 0.96
         Behavior on scale {
             NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
         }
 
+        // Album art image - simple version without problematic layer.effect
         Image {
+            id: albumImage
             anchors.fill: parent
             source: root.source
             visible: root.source.length > 0
@@ -46,6 +51,7 @@ Item {
             smooth: true
         }
 
+        // Placeholder gradient when no image
         Rectangle {
             anchors.fill: parent
             radius: cover.radius

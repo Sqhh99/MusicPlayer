@@ -6,10 +6,12 @@ Item {
     id: root
 
     property bool miniMode: false
+    property bool isPinned: false
 
     signal toggleMiniRequested()
     signal minimizeRequested()
     signal closeRequested()
+    signal togglePinRequested()
 
     implicitWidth: controlsRow.implicitWidth
     implicitHeight: controlsRow.implicitHeight
@@ -25,16 +27,19 @@ Item {
             iconColor: Theme.textMuted
             iconOpacity: 0.6
             active: false
-            hoverColor: Theme.hoverBg
             onClicked: root.toggleMiniRequested()
         }
 
-        Rectangle {
-            width: 1
-            height: 12
-            radius: 1
-            color: "#d1d5db"
-            anchors.verticalCenter: parent.verticalCenter
+        // Pin button - between mini mode and minimize
+        IconButton {
+            size: 26
+            iconSize: 12
+            iconSource: Theme.iconPath + "pin.png"
+            iconColor: Theme.textMuted
+            iconOpacity: root.isPinned ? 0.9 : 0.5
+            active: root.isPinned
+            activeBackgroundColor: Theme.accentSoft
+            onClicked: root.togglePinRequested()
         }
 
         IconButton {
@@ -43,7 +48,6 @@ Item {
             iconSource: Theme.iconPath + "minus.png"
             iconColor: Theme.textMuted
             iconOpacity: 0.6
-            hoverColor: Theme.hoverBg
             onClicked: root.minimizeRequested()
         }
 

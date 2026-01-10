@@ -126,7 +126,8 @@ void MusicPlayer::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
         } else {
             currentMediaIndex = (currentMediaIndex + 1) % mediaList.size();
             player->setSource(mediaList.at(currentMediaIndex));
-            player->play();
+            // Use this->play() to emit musicStart signal for proper song info update
+            this->play();
         }
         emit musicCompletion(currentMediaIndex);
     }
