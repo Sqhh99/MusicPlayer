@@ -1,14 +1,21 @@
-# MusicPlayer
+<p align="center">
+  <img src="resources/icons/listen1.ico" width="128" height="128" />
+</p>
 
-![icon](resources/icons/listen1.ico)
+<h1 align="center">MusicPlayer</h1>
 
-A modern, minimalist music player built with Qt 6 QML.
+<p align="center">
+  A modern, minimalist music player built with Qt 6 QML.
+</p>
+
+---
 
 ## Screenshots
 
-![Full Mode](examples/full.png)
-
-![Mini Mode](examples/mini.png)
+<p align="center">
+  <img src="examples/full.png" width="45%" />
+  <img src="examples/mini.png" width="45%" />
+</p>
 
 ## Features
 
@@ -21,20 +28,20 @@ A modern, minimalist music player built with Qt 6 QML.
 
 ## Recent Changes
 
-### UI Fixes
-- `IconButton.qml`: Removed flashing hover background
-- `AlbumArt.qml`: Fixed image not rendering (removed problematic layer.effect)
-- `WindowControls.qml`: Repositioned pin button
-- `MiniPlayer.qml`: Adjusted margins for visual balance
-- `PlaylistOverlay.qml`: Fixed close button cursor (z-index and MouseArea structure)
-- `Main.qml`: Hide dragArea when playlist open to prevent cursor conflicts
+### UI Polish
+- **IconButton**: Removed flashing hover background
+- **AlbumArt**: Fixed image rendering issues
+- **MiniPlayer**: Adjusted padding for visual balance
+- **PlaylistOverlay**: Fixed close button cursor interaction
+- **WindowControls**: Optimised layout and pin button position
 
-### Features
-- Edge snapping in mini mode (20px threshold)
-- System tray menu with icons for all actions
+### New Features
+- **Edge Snapping**: Mini player automatically snaps to screen edges (20px threshold)
+- **System Tray**: Enhanced menu with icons for all actions
 
 ### Bug Fixes
-- `musicplayer.cpp`: Fixed auto-play song info not updating (emit musicStart on track change)
+- Fixed song info not updating on auto-play
+- Fixed cursor conflicts in playlist overlay
 
 ## Build
 
@@ -45,6 +52,6 @@ cmake --build build --config Release
 
 ## Tech Stack
 
-- Qt 6.10+ (QtQuick, QtMultimedia with FFmpeg)
-- C++17
-- QML
+- **Framework**: Qt 6.10+ (QtQuick, QtMultimedia)
+- **Language**: C++17, QML
+- **Media Engine**: FFmpeg
