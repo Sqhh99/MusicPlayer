@@ -62,7 +62,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        // Close button - using separate MouseArea with containsMouse
+        // Close button - defined first so folderButton can reference it
         Rectangle {
             id: closeButton
             width: 30
@@ -87,13 +87,41 @@ Rectangle {
             MouseArea {
                 id: closeButtonArea
                 anchors.fill: parent
-                anchors.margins: -5  // Extend hit area slightly
+                anchors.margins: -5
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                
-                onClicked: {
-                    root.closeRequested()
-                }
+                onClicked: root.closeRequested()
+            }
+        }
+
+        // Folder button - open folder dialog
+        Rectangle {
+            id: folderButton
+            width: 30
+            height: 30
+            radius: 8
+            x: parent.width - 18 - closeButton.width - 8 - width  // Position left of close button
+            anchors.verticalCenter: parent.verticalCenter
+            color: folderButtonArea.pressed ? "#e5e7eb" : (folderButtonArea.containsMouse ? "#f3f4f6" : "transparent")
+            z: 10
+
+            Image {
+                anchors.centerIn: parent
+                source: Theme.iconPath + "folder.png"
+                width: 14
+                height: 14
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                opacity: folderButtonArea.containsMouse ? 0.9 : 0.6
+            }
+
+            MouseArea {
+                id: folderButtonArea
+                anchors.fill: parent
+                anchors.margins: -5
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.openFilesRequested()
             }
         }
 

@@ -81,6 +81,7 @@ qt_add_qml_module(MusicPlayer
         resources/icons/volume-x.png
         resources/icons/x.png
         resources/icons/pin.png
+        resources/icons/folder.png
 )
 
 # Link libraries
@@ -97,7 +98,7 @@ target_include_directories(MusicPlayer PRIVATE
 
 # Set target properties
 set_target_properties(MusicPlayer PROPERTIES
-    WIN32_EXECUTABLE FALSE
+    WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER com.musicplayer.app
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
