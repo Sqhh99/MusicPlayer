@@ -74,7 +74,11 @@ void MusicPlayer::stop()
 
 void MusicPlayer::setVolume(int volume)
 {
+    if (!audioOutput) {
+        return;
+    }
     audioOutput->setVolume(volume / 100.0);
+    emit volumeChanged(volume);
 }
 
 int MusicPlayer::volume() const

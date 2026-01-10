@@ -61,7 +61,7 @@ QtObject {
     readonly property int controlSizeMiniPlay: 44
     readonly property int progressHeight: 6
     readonly property int progressHeightMini: 5
-    readonly property int bottomBarHeight: 40
+    readonly property int bottomBarHeight: 36
     readonly property int headerInset: 64
 
     readonly property int iconSizeSm: 14

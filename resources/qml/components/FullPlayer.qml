@@ -13,6 +13,7 @@ Item {
     property bool isShuffle: false
     property bool compact: false
     property var lyrics: []
+    property var appWindow: null
 
     signal toggleLyrics()
     signal toggleEq()
@@ -58,7 +59,7 @@ Item {
                 anchors.fill: parent
                 spacing: 0
 
-                Item { Layout.preferredHeight: 48 }
+                Item { Layout.preferredHeight: 58 }
 
                 ColumnLayout {
                     Layout.fillWidth: true
@@ -86,13 +87,13 @@ Item {
                     }
                 }
 
-                Item { Layout.preferredHeight: 4 }
+                Item { Layout.preferredHeight: 2 }
 
                 Item {
                     id: centerArea
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.showLyrics ? 0 : 240
-                    Layout.minimumHeight: 210
+                    Layout.preferredHeight: root.showLyrics ? 0 : 220
+                    Layout.minimumHeight: 200
                     Layout.fillHeight: root.showLyrics
 
                     LyricsPanel {
@@ -114,7 +115,7 @@ Item {
 
                         ColumnLayout {
                             anchors.fill: parent
-                            spacing: 8
+                            spacing: 6
 
                             RowLayout {
                                 Layout.fillWidth: true
@@ -155,6 +156,7 @@ Item {
                                         iconSource: Theme.iconPath + "shuffle.png"
                                         iconOpacity: 0.55
                                         activeOpacity: 0.9
+                                        activeBackgroundColor: Theme.accentSoft
                                         active: root.isShuffle
                                         onClicked: root.toggleShuffle()
                                     }
@@ -167,8 +169,6 @@ Item {
                                         activeOpacity: 0.9
                                         activeBackgroundColor: Theme.accentSoft
                                         active: root.controller ? root.controller.isLooping : false
-                                        showBorder: root.controller ? root.controller.isLooping : false
-                                        borderColor: Theme.accent
                                         onClicked: {
                                             if (root.controller) {
                                                 root.controller.isLooping = !root.controller.isLooping
@@ -326,21 +326,14 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            propagateComposedEvents: true
-            onPressed: (mouse) => {
-                var local = eqPanel.mapFromItem(eqOverlay, mouse.x, mouse.y)
-                if (local.x >= 0 && local.y >= 0 && local.x <= eqPanel.width && local.y <= eqPanel.height) {
-                    mouse.accepted = false
-                    return
-                }
-                mouse.accepted = true
-                root.toggleEq()
-            }
+            cursorShape: Qt.ArrowCursor
+            onClicked: root.toggleEq()
         }
 
         EqualizerPanel {
             id: eqPanel
             anchors.centerIn: parent
+            z: 1
             bass: root.controller ? root.controller.bassLevel : 50
             mid: root.controller ? root.controller.midLevel : 50
             treble: root.controller ? root.controller.trebleLevel : 50
@@ -356,6 +349,7 @@ Item {
         model: root.controller ? root.controller.playlist : null
         currentIndex: root.controller ? root.controller.currentIndex : -1
         isPlaying: root.controller ? root.controller.isPlaying : false
+        appWindow: root.appWindow
         onCloseRequested: root.togglePlaylist()
         onOpenFilesRequested: root.openFilesRequested()
         onSelectIndex: (index) => {

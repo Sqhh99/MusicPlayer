@@ -19,6 +19,7 @@ Item {
     property real iconOpacity: 0.65
     property real activeOpacity: 0.95
     property int radius: Math.max(8, Math.round(size * 0.25))
+    property bool hovered: false
 
     signal clicked()
 
@@ -54,6 +55,9 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        onEntered: root.hovered = true
+        onExited: root.hovered = false
+        onCanceled: root.hovered = false
         onClicked: root.clicked()
     }
 }

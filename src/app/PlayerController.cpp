@@ -20,6 +20,11 @@ PlayerController::PlayerController(QObject *parent)
     // Load initial volume
     int savedVolume = m_settings->value("volume", 80).toInt();
     m_musicPlayer->setVolume(savedVolume);
+
+    int savedBass = m_settings->value("eq/bass", 50).toInt();
+    int savedMid = m_settings->value("eq/mid", 50).toInt();
+    int savedTreble = m_settings->value("eq/treble", 50).toInt();
+    m_musicPlayer->setCustomEqualizer(savedBass, savedMid, savedTreble);
 }
 
 PlayerController::~PlayerController()
@@ -164,6 +169,7 @@ int PlayerController::bassLevel() const
 void PlayerController::setBassLevel(int level)
 {
     m_musicPlayer->setCustomEqualizer(level, m_musicPlayer->getMidLevel(), m_musicPlayer->getTrebleLevel());
+    m_settings->setValue("eq/bass", level);
     emit bassLevelChanged();
 }
 
@@ -175,6 +181,7 @@ int PlayerController::midLevel() const
 void PlayerController::setMidLevel(int level)
 {
     m_musicPlayer->setCustomEqualizer(m_musicPlayer->getBassLevel(), level, m_musicPlayer->getTrebleLevel());
+    m_settings->setValue("eq/mid", level);
     emit midLevelChanged();
 }
 
@@ -186,6 +193,7 @@ int PlayerController::trebleLevel() const
 void PlayerController::setTrebleLevel(int level)
 {
     m_musicPlayer->setCustomEqualizer(m_musicPlayer->getBassLevel(), m_musicPlayer->getMidLevel(), level);
+    m_settings->setValue("eq/treble", level);
     emit trebleLevelChanged();
 }
 

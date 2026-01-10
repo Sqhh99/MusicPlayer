@@ -66,6 +66,17 @@ ApplicationWindow {
         root.requestActivate()
     }
 
+    function setShuffleEnabled(enabled) {
+        root.isShuffle = enabled
+        if (enabled && playerController.isLooping) {
+            playerController.isLooping = false
+        }
+    }
+
+    function toggleShuffle() {
+        setShuffleEnabled(!root.isShuffle)
+    }
+
     onIsMiniModeChanged: {
         if (isMiniMode) {
             showPlaylist = false
@@ -84,6 +95,15 @@ ApplicationWindow {
     onShowLyricsChanged: {
         if (showLyrics) {
             showEq = false
+        }
+    }
+
+    Connections {
+        target: playerController
+        function onLoopingChanged() {
+            if (playerController.isLooping && root.isShuffle) {
+                root.isShuffle = false
+            }
         }
     }
 
@@ -160,6 +180,7 @@ ApplicationWindow {
         anchors.fill: contentArea
         visible: !isMiniMode
         controller: playerController
+        appWindow: root
         showLyrics: root.showLyrics
         showEq: root.showEq
         showPlaylist: root.showPlaylist
@@ -169,7 +190,7 @@ ApplicationWindow {
         onToggleLyrics: root.showLyrics = !root.showLyrics
         onToggleEq: root.showEq = !root.showEq
         onTogglePlaylist: root.showPlaylist = !root.showPlaylist
-        onToggleShuffle: root.isShuffle = !root.isShuffle
+        onToggleShuffle: root.toggleShuffle()
         onOpenFilesRequested: fileDialog.open()
     }
 
@@ -181,7 +202,7 @@ ApplicationWindow {
         title: playerController.currentSong
         artist: "本地音乐"
         isShuffle: root.isShuffle
-        onToggleShuffle: root.isShuffle = !root.isShuffle
+        onToggleShuffle: root.toggleShuffle()
     }
 
     FileDialog {

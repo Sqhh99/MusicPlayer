@@ -68,14 +68,14 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onPressed: {
+        onPressed: (mouse) => {
             root.dragging = true
             root.dragValue = root.valueFromPosition(mouse.x)
             if (root.live) {
                 root.seekRequested(root.dragValue)
             }
         }
-        onPositionChanged: {
+        onPositionChanged: (mouse) => {
             if (pressed) {
                 root.dragValue = root.valueFromPosition(mouse.x)
                 if (root.live) {
@@ -83,7 +83,7 @@ Item {
                 }
             }
         }
-        onReleased: {
+        onReleased: () => {
             if (root.dragging) {
                 root.dragging = false
                 root.seekRequested(root.dragValue)

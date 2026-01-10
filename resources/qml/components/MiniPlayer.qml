@@ -113,7 +113,7 @@ Item {
                     iconSource: Theme.iconPath + "shuffle.png"
                     active: root.isShuffle
                     activeOpacity: 0.9
-                    activeBackgroundColor: "transparent"
+                    activeBackgroundColor: Theme.accentSoft
                     iconOpacity: 0.55
                     onClicked: root.toggleShuffle()
                 }
@@ -157,8 +157,6 @@ Item {
                     active: root.controller ? root.controller.isLooping : false
                     activeOpacity: 0.9
                     activeBackgroundColor: Theme.accentSoft
-                    showBorder: root.controller ? root.controller.isLooping : false
-                    borderColor: Theme.accent
                     iconOpacity: 0.55
                     onClicked: {
                         if (root.controller) {

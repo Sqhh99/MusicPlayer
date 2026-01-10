@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import MusicPlayer
 
@@ -9,6 +8,9 @@ Rectangle {
     property int bass: 50
     property int mid: 50
     property int treble: 50
+    property int bassValue: bass
+    property int midValue: mid
+    property int trebleValue: treble
 
     signal bassRequested(int value)
     signal midRequested(int value)
@@ -43,30 +45,55 @@ Rectangle {
                 Layout.fillHeight: true
                 spacing: 6
 
-                Slider {
+                Item {
                     id: bassSlider
-                    Layout.fillHeight: true
                     Layout.preferredHeight: 96
-                    from: 0
-                    to: 100
-                    value: root.bass
-                    orientation: Qt.Vertical
-                    onValueChanged: {
-                        if (pressed) {
-                            root.bassRequested(Math.round(value))
-                        }
-                    }
-                    background: Rectangle {
-                        implicitWidth: 6
+                    Layout.preferredWidth: 24
+                    Layout.alignment: Qt.AlignHCenter
+
+                    Rectangle {
+                        id: bassTrack
+                        width: 6
+                        height: parent.height
                         radius: 3
                         color: Theme.trackBg
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
-                    handle: Rectangle {
+
+                    Rectangle {
+                        id: bassHandle
                         width: 14
                         height: 14
                         radius: 7
                         color: Theme.trackFill
+                        anchors.horizontalCenter: bassTrack.horizontalCenter
+                        y: bassTrack.y + (1 - (root.bassValue / 100)) * (bassTrack.height - height)
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: (mouse) => {
+                            updateBass(mouse.y)
+                        }
+                        onPositionChanged: (mouse) => {
+                            if (pressed) {
+                                updateBass(mouse.y)
+                            }
+                        }
+                        function updateBass(yPos) {
+                            var range = bassTrack.height - bassHandle.height
+                            if (range <= 0) {
+                                return
+                            }
+                            var clamped = Math.max(0, Math.min(range, yPos - bassHandle.height / 2))
+                            var value = Math.round((1 - (clamped / range)) * 100)
+                            if (root.bassValue !== value) {
+                                root.bassValue = value
+                                root.bassRequested(value)
+                            }
+                        }
                     }
                 }
 
@@ -77,6 +104,7 @@ Rectangle {
                     color: Theme.textMuted
                     horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
 
@@ -84,30 +112,55 @@ Rectangle {
                 Layout.fillHeight: true
                 spacing: 6
 
-                Slider {
+                Item {
                     id: midSlider
-                    Layout.fillHeight: true
                     Layout.preferredHeight: 96
-                    from: 0
-                    to: 100
-                    value: root.mid
-                    orientation: Qt.Vertical
-                    onValueChanged: {
-                        if (pressed) {
-                            root.midRequested(Math.round(value))
-                        }
-                    }
-                    background: Rectangle {
-                        implicitWidth: 6
+                    Layout.preferredWidth: 24
+                    Layout.alignment: Qt.AlignHCenter
+
+                    Rectangle {
+                        id: midTrack
+                        width: 6
+                        height: parent.height
                         radius: 3
                         color: Theme.trackBg
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
-                    handle: Rectangle {
+
+                    Rectangle {
+                        id: midHandle
                         width: 14
                         height: 14
                         radius: 7
                         color: Theme.trackFill
+                        anchors.horizontalCenter: midTrack.horizontalCenter
+                        y: midTrack.y + (1 - (root.midValue / 100)) * (midTrack.height - height)
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: (mouse) => {
+                            updateMid(mouse.y)
+                        }
+                        onPositionChanged: (mouse) => {
+                            if (pressed) {
+                                updateMid(mouse.y)
+                            }
+                        }
+                        function updateMid(yPos) {
+                            var range = midTrack.height - midHandle.height
+                            if (range <= 0) {
+                                return
+                            }
+                            var clamped = Math.max(0, Math.min(range, yPos - midHandle.height / 2))
+                            var value = Math.round((1 - (clamped / range)) * 100)
+                            if (root.midValue !== value) {
+                                root.midValue = value
+                                root.midRequested(value)
+                            }
+                        }
                     }
                 }
 
@@ -118,6 +171,7 @@ Rectangle {
                     color: Theme.textMuted
                     horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
 
@@ -125,30 +179,55 @@ Rectangle {
                 Layout.fillHeight: true
                 spacing: 6
 
-                Slider {
+                Item {
                     id: trebleSlider
-                    Layout.fillHeight: true
                     Layout.preferredHeight: 96
-                    from: 0
-                    to: 100
-                    value: root.treble
-                    orientation: Qt.Vertical
-                    onValueChanged: {
-                        if (pressed) {
-                            root.trebleRequested(Math.round(value))
-                        }
-                    }
-                    background: Rectangle {
-                        implicitWidth: 6
+                    Layout.preferredWidth: 24
+                    Layout.alignment: Qt.AlignHCenter
+
+                    Rectangle {
+                        id: trebleTrack
+                        width: 6
+                        height: parent.height
                         radius: 3
                         color: Theme.trackBg
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
-                    handle: Rectangle {
+
+                    Rectangle {
+                        id: trebleHandle
                         width: 14
                         height: 14
                         radius: 7
                         color: Theme.trackFill
+                        anchors.horizontalCenter: trebleTrack.horizontalCenter
+                        y: trebleTrack.y + (1 - (root.trebleValue / 100)) * (trebleTrack.height - height)
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onPressed: (mouse) => {
+                            updateTreble(mouse.y)
+                        }
+                        onPositionChanged: (mouse) => {
+                            if (pressed) {
+                                updateTreble(mouse.y)
+                            }
+                        }
+                        function updateTreble(yPos) {
+                            var range = trebleTrack.height - trebleHandle.height
+                            if (range <= 0) {
+                                return
+                            }
+                            var clamped = Math.max(0, Math.min(range, yPos - trebleHandle.height / 2))
+                            var value = Math.round((1 - (clamped / range)) * 100)
+                            if (root.trebleValue !== value) {
+                                root.trebleValue = value
+                                root.trebleRequested(value)
+                            }
+                        }
                     }
                 }
 
@@ -159,8 +238,13 @@ Rectangle {
                     color: Theme.textMuted
                     horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
         }
     }
+
+    onBassChanged: root.bassValue = bass
+    onMidChanged: root.midValue = mid
+    onTrebleChanged: root.trebleValue = treble
 }
