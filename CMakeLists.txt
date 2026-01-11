@@ -63,6 +63,10 @@ qt_add_qml_module(MusicPlayer
         resources/qml/components/EqualizerPanel.qml
         resources/qml/components/MiniPlayer.qml
         resources/qml/components/FullPlayer.qml
+        resources/qml/components/WindowDragArea.qml
+        resources/qml/components/AppShortcuts.qml
+        resources/qml/components/TrayIcon.qml
+        resources/qml/components/OpenFilesDialog.qml
     RESOURCES
         resources/icons/listen1.ico
         resources/icons/chevron-down.png
@@ -98,7 +102,7 @@ target_include_directories(MusicPlayer PRIVATE
 
 # Set target properties
 set_target_properties(MusicPlayer PROPERTIES
-    WIN32_EXECUTABLE TRUE
+  WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER com.musicplayer.app
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
