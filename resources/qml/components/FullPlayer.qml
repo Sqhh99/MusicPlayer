@@ -240,8 +240,11 @@ Item {
                                     iconSource: root.controller && root.controller.isPlaying
                                         ? Theme.iconPath + "pause.png"
                                         : Theme.iconPath + "play.png"
-                                    backgroundColor: "#ffffff"
+                                    backgroundColor: Theme.materialPrimaryButtonBg
+                                    hoverColor: Theme.materialPrimaryButtonHoverBg
+                                    pressedColor: Theme.materialPrimaryButtonPressedBg
                                     showBorder: true
+                                    borderColor: Theme.materialPrimaryButtonBorder
                                     onClicked: root.controller ? root.controller.togglePlayPause() : undefined
                                 }
 
@@ -268,9 +271,14 @@ Item {
                         id: playlistButton
                         height: 36
                         radius: 12
-                        color: root.showPlaylist ? Theme.accentSoft : "#ffffff"
-                        border.color: "transparent"
-                        border.width: 0
+                        property bool hovered: playlistButtonArea.containsMouse
+                        color: root.showPlaylist
+                            ? Theme.materialButtonActiveBg
+                            : (playlistButtonArea.pressed
+                                ? Theme.materialButtonPressedBg
+                                : (hovered ? Theme.materialButtonHoverBg : Theme.materialButtonBg))
+                        border.color: Theme.materialButtonBorder
+                        border.width: 1
                         implicitWidth: playlistRow.implicitWidth + 20
                         Layout.alignment: Qt.AlignVCenter
 
@@ -298,7 +306,9 @@ Item {
                         }
 
                         MouseArea {
+                            id: playlistButtonArea
                             anchors.fill: parent
+                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.togglePlaylist()
                         }

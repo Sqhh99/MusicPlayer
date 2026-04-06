@@ -8,14 +8,14 @@ Item {
     property int size: Theme.controlSize
     property int iconSize: Theme.iconSize
     property color backgroundColor: "transparent"
-    property color hoverColor: "transparent"  // No hover background by default
-    property color pressedColor: "#00000012"
+    property color hoverColor: "transparent"
+    property color pressedColor: Theme.materialButtonPressedBg
     property color iconColor: Theme.textMuted
     property color activeColor: Theme.accent
     property bool active: false
     property bool showBorder: false
-    property color borderColor: Theme.cardBorder
-    property color activeBackgroundColor: Theme.accentSoft
+    property color borderColor: Theme.materialButtonBorder
+    property color activeBackgroundColor: Theme.materialButtonActiveBg
     property real iconOpacity: 0.65
     property real activeOpacity: 0.95
     property int radius: Math.max(8, Math.round(size * 0.25))
@@ -32,10 +32,10 @@ Item {
         id: bg
         anchors.fill: parent
         radius: root.radius
-        // Simplified: only show background when active or pressed, no hover background flash
         color: root.active
             ? root.activeBackgroundColor
-            : (mouseArea.pressed ? root.pressedColor : root.backgroundColor)
+            : (mouseArea.pressed ? root.pressedColor
+                                 : (mouseArea.containsMouse ? root.hoverColor : root.backgroundColor))
         border.color: root.showBorder ? root.borderColor : "transparent"
         border.width: root.showBorder ? 1 : 0
         

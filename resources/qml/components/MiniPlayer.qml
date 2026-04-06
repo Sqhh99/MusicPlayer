@@ -140,8 +140,11 @@ Item {
                     iconSource: root.controller && root.controller.isPlaying
                         ? Theme.iconPath + "pause.png"
                         : Theme.iconPath + "play.png"
-                    backgroundColor: "#ffffff"
+                    backgroundColor: Theme.materialPrimaryButtonBg
+                    hoverColor: Theme.materialPrimaryButtonHoverBg
+                    pressedColor: Theme.materialPrimaryButtonPressedBg
                     showBorder: true
+                    borderColor: Theme.materialPrimaryButtonBorder
                     iconOpacity: 0.9
                     onClicked: root.controller ? root.controller.togglePlayPause() : undefined
                 }
