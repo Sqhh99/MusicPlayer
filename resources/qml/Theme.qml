@@ -17,6 +17,9 @@ QtObject {
 
     readonly property string fontFamily: "Plus Jakarta Sans"
     readonly property string fontFamilyMono: "JetBrains Mono"
+    readonly property string lyricsFontFamily: Qt.platform.os === "windows"
+        ? "Yu Gothic UI"
+        : fontFamily
 
     readonly property color backgroundStart: darkMode ? "#0a0a0b" : "#f3f4f6"
     readonly property color backgroundEnd: darkMode ? "#121214" : "#f3f4f6"

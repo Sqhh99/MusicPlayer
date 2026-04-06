@@ -25,8 +25,8 @@ Rectangle {
     width: parent.width
     radius: 0
     color: Theme.surfaceOverlayBg
-    border.color: Theme.surfaceOverlayBorder
-    border.width: 1
+    border.color: "transparent"
+    border.width: 0
     clip: true
     z: 4
 
@@ -38,9 +38,6 @@ Rectangle {
     }
 
     property int headerHeight: 64
-    property point dragStartPos: Qt.point(0, 0)
-    property bool dragging: false
-
     // Header area
     Rectangle {
         id: header
@@ -103,35 +100,24 @@ Rectangle {
             }
         }
 
-        // Drag area - explicitly sized to not overlap close button
         MouseArea {
             id: dragArea
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width - closeButton.width - 40  // Leave space
+            width: parent.width - closeButton.width - 40
             hoverEnabled: true
             cursorShape: Qt.SizeAllCursor
             z: 1
-            
+
             onPressed: (mouse) => {
-                if (mouse.button !== Qt.LeftButton) {
+                if (!root.appWindow || mouse.button !== Qt.LeftButton) {
                     return
                 }
-                if (root.appWindow) {
-                    root.dragging = true
-                    root.dragStartPos = Qt.point(mouse.x, mouse.y)
+                if (root.appWindow.startSystemMove) {
+                    root.appWindow.startSystemMove()
                 }
             }
-            onPositionChanged: (mouse) => {
-                if (root.dragging && root.appWindow) {
-                    var globalPos = mapToGlobal(mouse.x, mouse.y)
-                    root.appWindow.x = globalPos.x - root.dragStartPos.x
-                    root.appWindow.y = globalPos.y - root.dragStartPos.y
-                }
-            }
-            onReleased: root.dragging = false
-            onCanceled: root.dragging = false
         }
     }
 

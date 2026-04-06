@@ -61,11 +61,12 @@ Item {
                     text: modelData
                     color: index === root.highlightIndex ? Theme.textPrimary : Theme.textMuted
                     font.pixelSize: index === root.highlightIndex ? 16 : 13
-                    font.family: Theme.fontFamily
+                    font.family: Theme.lyricsFontFamily
                     font.weight: index === root.highlightIndex ? Font.DemiBold : Font.Normal
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
                     opacity: index === root.highlightIndex ? 1.0 : 0.7
+                    renderType: Text.NativeRendering
 
                     Behavior on font.pixelSize {
                         NumberAnimation { duration: 150 }
