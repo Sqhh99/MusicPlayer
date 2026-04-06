@@ -19,8 +19,8 @@ Rectangle {
     width: 240
     height: 160
     radius: 18
-    color: Theme.cardBg
-    border.color: Theme.cardBorder
+    color: Theme.surfacePanelBg
+    border.color: Theme.surfacePanelBorder
     border.width: 1
 
     ColumnLayout {

@@ -345,22 +345,4 @@ Item {
         }
     }
 
-    PlaylistOverlay {
-        anchors.fill: parent
-        open: root.showPlaylist
-        model: root.controller ? root.controller.playlist : null
-        currentIndex: root.controller ? root.controller.currentIndex : -1
-        isPlaying: root.controller ? root.controller.isPlaying : false
-        appWindow: root.appWindow
-        onCloseRequested: root.togglePlaylist()
-        onOpenFilesRequested: root.openFilesRequested()
-        onSelectIndex: (index) => {
-            if (root.controller) {
-                root.controller.playIndex(index)
-            }
-            if (root.compact) {
-                root.togglePlaylist()
-            }
-        }
-    }
 }

@@ -30,6 +30,11 @@ ApplicationWindow {
     property bool isShuffle: false
     property bool compact: width < 900
 
+    Component.onCompleted: {
+        windowEffects.cornerRadius = isMiniMode ? Theme.radiusMini : Theme.radiusLarge
+        playerController.loadSavedPlaylist()
+    }
+
     property var lyricsLines: [
         "Waiting in a car",
         "Waiting for a ride in the dark",
@@ -68,6 +73,7 @@ ApplicationWindow {
     property bool savedLyricsState: false
 
     onIsMiniModeChanged: {
+        windowEffects.cornerRadius = isMiniMode ? Theme.radiusMini : Theme.radiusLarge
         if (isMiniMode) {
             // Save lyrics state before switching to mini mode
             savedLyricsState = showLyrics
@@ -112,85 +118,131 @@ ApplicationWindow {
     }
 
     Rectangle {
-        id: card
+        id: surface
         anchors.fill: parent
         anchors.margins: 0
         radius: isMiniMode ? Theme.radiusMini : Theme.radiusLarge
-        color: Theme.cardBg
-        border.color: Theme.cardBorder
+        color: Theme.surfaceBg
+        border.color: Theme.surfaceBorder
         border.width: 1
-    }
+        clip: true
 
-    WindowControls {
-        id: windowControls
-        z: 3
-        anchors.top: card.top
-        anchors.right: card.right
-        anchors.topMargin: 14
-        anchors.rightMargin: 16
-        visible: !showPlaylist
-        miniMode: root.isMiniMode
-        isPinned: root.isPinned
-        onToggleMiniRequested: root.isMiniMode = !root.isMiniMode
-        onMinimizeRequested: root.showMinimized()
-        onCloseRequested: root.hide()
-        onTogglePinRequested: root.isPinned = !root.isPinned
-    }
-
-    WindowDragArea {
-        id: dragArea
-        anchors.left: card.left
-        anchors.right: card.right
-        anchors.top: card.top
-        appWindow: root
-        isMiniMode: root.isMiniMode
-        showPlaylist: root.showPlaylist
-        showEq: root.showEq
-    }
-
-    Item {
-        id: contentArea
-        anchors.fill: card
-        anchors.margins: 0
-    }
-
-    FullPlayer {
-        id: fullPlayer
-        anchors.fill: contentArea
-        visible: opacity > 0
-        opacity: isMiniMode ? 0 : 1
-        controller: playerController
-        appWindow: root
-        showLyrics: root.showLyrics
-        showEq: root.showEq
-        showPlaylist: root.showPlaylist
-        isShuffle: root.isShuffle
-        compact: root.compact
-        lyrics: root.lyricsLines
-        onToggleLyrics: root.showLyrics = !root.showLyrics
-        onToggleEq: root.showEq = !root.showEq
-        onTogglePlaylist: root.showPlaylist = !root.showPlaylist
-        onToggleShuffle: root.toggleShuffle()
-        onOpenFilesRequested: fileDialog.open()
-
-        Behavior on opacity {
-            NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Theme.surfaceHighlight }
+                GradientStop { position: 0.45; color: "#22FFFFFF" }
+                GradientStop { position: 1.0; color: Theme.surfaceBottomTint }
+            }
         }
-    }
 
-    MiniPlayer {
-        id: miniPlayer
-        anchors.fill: contentArea
-        visible: opacity > 0
-        opacity: isMiniMode ? 1 : 0
-        controller: playerController
-        title: playerController.currentSong
-        artist: "本地音乐"
-        isShuffle: root.isShuffle
-        onToggleShuffle: root.toggleShuffle()
+        Rectangle {
+            width: root.isMiniMode ? 180 : 320
+            height: root.isMiniMode ? 120 : 260
+            x: root.isMiniMode ? -24 : -72
+            y: root.isMiniMode ? -30 : -88
+            radius: width / 2
+            color: Theme.surfaceGlowBlue
+        }
 
-        Behavior on opacity {
-            NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+        Rectangle {
+            width: root.isMiniMode ? 120 : 220
+            height: root.isMiniMode ? 120 : 220
+            x: width + 90
+            y: height - (root.isMiniMode ? 80 : 120)
+            radius: width / 2
+            color: Theme.surfaceGlowRose
+        }
+
+        Item {
+            id: contentArea
+            anchors.fill: parent
+
+            FullPlayer {
+                id: fullPlayer
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: (isMiniMode || showPlaylist) ? 0 : 1
+                controller: playerController
+                appWindow: root
+                showLyrics: root.showLyrics
+                showEq: root.showEq
+                showPlaylist: root.showPlaylist
+                isShuffle: root.isShuffle
+                compact: root.compact
+                lyrics: root.lyricsLines
+                onToggleLyrics: root.showLyrics = !root.showLyrics
+                onToggleEq: root.showEq = !root.showEq
+                onTogglePlaylist: root.showPlaylist = !root.showPlaylist
+                onToggleShuffle: root.toggleShuffle()
+                onOpenFilesRequested: fileDialog.open()
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                }
+            }
+
+            MiniPlayer {
+                id: miniPlayer
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: isMiniMode ? 1 : 0
+                controller: playerController
+                title: playerController.currentSong
+                artist: "本地音乐"
+                isShuffle: root.isShuffle
+                onToggleShuffle: root.toggleShuffle()
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                }
+            }
+
+            PlaylistOverlay {
+                id: playlistOverlay
+                anchors.fill: parent
+                open: root.showPlaylist && !root.isMiniMode
+                model: playerController.playlist
+                currentIndex: playerController.currentIndex
+                isPlaying: playerController.isPlaying
+                appWindow: root
+                onCloseRequested: root.showPlaylist = false
+                onOpenFilesRequested: fileDialog.open()
+                onSelectIndex: (index) => {
+                    playerController.playIndex(index)
+                    if (root.compact) {
+                        root.showPlaylist = false
+                    }
+                }
+            }
+        }
+
+        WindowControls {
+            id: windowControls
+            z: 3
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 14
+            anchors.rightMargin: 16
+            visible: !showPlaylist
+            miniMode: root.isMiniMode
+            isPinned: root.isPinned
+            onToggleMiniRequested: root.isMiniMode = !root.isMiniMode
+            onMinimizeRequested: root.showMinimized()
+            onCloseRequested: root.hide()
+            onTogglePinRequested: root.isPinned = !root.isPinned
+        }
+
+        WindowDragArea {
+            id: dragArea
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            appWindow: root
+            isMiniMode: root.isMiniMode
+            showPlaylist: root.showPlaylist
+            showEq: root.showEq
         }
     }
 
@@ -210,9 +262,5 @@ ApplicationWindow {
         controller: playerController
         isShuffle: root.isShuffle
         onToggleShuffleRequested: root.toggleShuffle()
-    }
-
-    Component.onCompleted: {
-        playerController.loadSavedPlaylist()
     }
 }

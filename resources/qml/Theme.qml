@@ -14,6 +14,21 @@ QtObject {
     readonly property color cardBg: "#ffffff"
     readonly property color cardBorder: "#e5e7eb"
     readonly property color cardShadow: "#0000001a"
+    readonly property color acrylicCardBg: "#A8FFFFFF"
+    readonly property color acrylicCardBorder: "#8CFFFFFF"
+    readonly property color acrylicOverlayBg: "#BCFFFFFF"
+    readonly property color acrylicOverlayBorder: "#96FFFFFF"
+    readonly property color surfaceBg: "#EAF8F8F9"
+    readonly property color surfaceBorder: "#B3FFFFFF"
+    readonly property color surfaceOverlayBg: "#F4FCFCFD"
+    readonly property color surfaceOverlayBorder: "#D9E5E7EB"
+    readonly property color surfacePanelBg: "#EEFDFDFD"
+    readonly property color surfacePanelBorder: "#C7E5E7EB"
+    readonly property color surfaceHighlight: "#80FFFFFF"
+    readonly property color surfaceBottomTint: "#14CBD5E1"
+    readonly property color surfaceGlowBlue: "#26BFDBFE"
+    readonly property color surfaceGlowRose: "#18E9D5FF"
+    readonly property color surfaceShadow: "#180F172A"
 
     readonly property color textPrimary: "#111827"
     readonly property color textSecondary: "#1f2937"
@@ -43,8 +58,8 @@ QtObject {
 
     readonly property int outerPadding: 40
     readonly property int outerPaddingMini: 14
-    readonly property int radiusLarge: 32
-    readonly property int radiusMini: 24
+    readonly property int radiusLarge: 8
+    readonly property int radiusMini: 8
 
     readonly property int albumSize: 300
     readonly property int albumSizeMini: 128

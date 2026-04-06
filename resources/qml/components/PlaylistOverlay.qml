@@ -23,9 +23,9 @@ Rectangle {
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     width: parent.width
-    radius: Theme.radiusLarge
-    color: Theme.overlayBg
-    border.color: Theme.overlayBorder
+    radius: 0
+    color: Theme.surfaceOverlayBg
+    border.color: Theme.surfaceOverlayBorder
     border.width: 1
     clip: true
     z: 4
@@ -163,7 +163,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: header.bottom
         height: 1
-        color: Theme.overlayBorder
+        color: Theme.surfaceOverlayBorder
     }
 
     ListView {

@@ -27,6 +27,8 @@ set(APP_SOURCES
     src/app/PlayerController.h
     src/app/PlaylistModel.cpp
     src/app/PlaylistModel.h
+    src/platform/WindowEffectsController.cpp
+    src/platform/WindowEffectsController.h
 )
 
 # Windows icon resource
