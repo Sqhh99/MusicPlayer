@@ -24,6 +24,8 @@ enum DwmWindowCornerPreference {
 };
 
 constexpr DWORD DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+constexpr DWORD DWMWA_BORDER_COLOR = 34;
+constexpr COLORREF DWMWA_COLOR_NONE = 0xFFFFFFFE;
 
 DwmSetWindowAttributeFn resolveDwmSetWindowAttribute()
 {
@@ -45,6 +47,13 @@ void applyWindowCornerPreference(HWND hwnd, int radius)
                           DWMWA_WINDOW_CORNER_PREFERENCE,
                           &preference,
                           sizeof(preference));
+
+    // Suppress the system-drawn frame border so it does not glow against the QML surface.
+    const COLORREF borderColor = DWMWA_COLOR_NONE;
+    dwmSetWindowAttribute(hwnd,
+                          DWMWA_BORDER_COLOR,
+                          &borderColor,
+                          sizeof(borderColor));
 }
 
 #endif
