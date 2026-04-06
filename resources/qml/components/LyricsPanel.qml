@@ -85,7 +85,8 @@ Item {
         size: 34
         iconSize: 16
         iconSource: Theme.iconPath + "chevron-down.png"
-        iconColor: Theme.textSubtle
+        iconColor: Theme.buttonIconColor
+        iconOpacity: Theme.buttonIconSoftOpacity
         hoverColor: Theme.hoverBg
         showBorder: true
         onClicked: root.backRequested()

@@ -27,6 +27,7 @@ ApplicationWindow {
     property bool showPlaylist: false
     property bool showLyrics: false
     property bool showEq: false
+    property bool showSettings: false
     property bool isShuffle: false
     property bool compact: width < 900
 
@@ -69,6 +70,15 @@ ApplicationWindow {
         setShuffleEnabled(!root.isShuffle)
     }
 
+    function openSettings() {
+        if (root.isMiniMode) {
+            root.isMiniMode = false
+        }
+        root.showPlaylist = false
+        root.showEq = false
+        root.showSettings = true
+    }
+
     // Preserve lyrics state when switching to mini mode
     property bool savedLyricsState: false
 
@@ -90,13 +100,20 @@ ApplicationWindow {
 
     onShowPlaylistChanged: {
         if (showPlaylist) {
-            // Don't reset showLyrics - just hide it temporarily
+            showSettings = false
             showEq = false
         }
     }
 
     onShowLyricsChanged: {
         if (showLyrics) {
+            showEq = false
+        }
+    }
+
+    onShowSettingsChanged: {
+        if (showSettings) {
+            showPlaylist = false
             showEq = false
         }
     }
@@ -132,7 +149,7 @@ ApplicationWindow {
             color: "transparent"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: Theme.surfaceHighlight }
-                GradientStop { position: 0.45; color: "#22FFFFFF" }
+                GradientStop { position: 0.45; color: Theme.surfaceMidHighlight }
                 GradientStop { position: 1.0; color: Theme.surfaceBottomTint }
             }
         }
@@ -163,7 +180,7 @@ ApplicationWindow {
                 id: fullPlayer
                 anchors.fill: parent
                 visible: opacity > 0
-                opacity: (isMiniMode || showPlaylist) ? 0 : 1
+                opacity: (isMiniMode || showPlaylist || showSettings) ? 0 : 1
                 controller: playerController
                 appWindow: root
                 showLyrics: root.showLyrics
@@ -187,7 +204,7 @@ ApplicationWindow {
                 id: miniPlayer
                 anchors.fill: parent
                 visible: opacity > 0
-                opacity: isMiniMode ? 1 : 0
+                opacity: (isMiniMode && !showSettings) ? 1 : 0
                 controller: playerController
                 title: playerController.currentSong
                 artist: "本地音乐"
@@ -216,6 +233,15 @@ ApplicationWindow {
                     }
                 }
             }
+
+            SettingsOverlay {
+                id: settingsOverlay
+                anchors.fill: parent
+                open: root.showSettings
+                appWindow: root
+                settings: appSettings
+                onCloseRequested: root.showSettings = false
+            }
         }
 
         WindowControls {
@@ -225,13 +251,15 @@ ApplicationWindow {
             anchors.right: parent.right
             anchors.topMargin: 14
             anchors.rightMargin: 16
-            visible: !showPlaylist
+            visible: !showPlaylist && !showSettings
             miniMode: root.isMiniMode
             isPinned: root.isPinned
+            settingsOpen: root.showSettings
             onToggleMiniRequested: root.isMiniMode = !root.isMiniMode
             onMinimizeRequested: root.showMinimized()
             onCloseRequested: root.hide()
             onTogglePinRequested: root.isPinned = !root.isPinned
+            onOpenSettingsRequested: root.openSettings()
         }
 
         WindowDragArea {
@@ -243,6 +271,7 @@ ApplicationWindow {
             isMiniMode: root.isMiniMode
             showPlaylist: root.showPlaylist
             showEq: root.showEq
+            showSettings: root.showSettings
         }
     }
 

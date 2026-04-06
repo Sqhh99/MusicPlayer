@@ -130,8 +130,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "mic-vocal.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         active: root.showLyrics
                                         onClicked: root.toggleLyrics()
                                     }
@@ -140,8 +140,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "sliders-vertical.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         active: root.showEq
                                         onClicked: root.toggleEq()
                                     }
@@ -156,8 +156,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "shuffle.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         activeBackgroundColor: Theme.accentSoft
                                         active: root.isShuffle
                                         onClicked: root.toggleShuffle()
@@ -167,8 +167,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "repeat.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         activeBackgroundColor: Theme.accentSoft
                                         active: root.controller ? root.controller.isLooping : false
                                         onClicked: {
@@ -228,7 +228,7 @@ Item {
                                 IconButton {
                                     size: Theme.controlSizeMd
                                     iconSize: 24
-                                    iconOpacity: 0.7
+                                    iconOpacity: Theme.buttonIconSoftOpacity
                                     iconSource: Theme.iconPath + "skip-back.png"
                                     onClicked: root.controller ? root.controller.previous() : undefined
                                 }
@@ -236,7 +236,7 @@ Item {
                                 IconButton {
                                     size: Theme.controlSizeXl
                                     iconSize: 28
-                                    iconOpacity: 0.9
+                                    iconOpacity: Theme.buttonIconStrongOpacity
                                     iconSource: root.controller && root.controller.isPlaying
                                         ? Theme.iconPath + "pause.png"
                                         : Theme.iconPath + "play.png"
@@ -251,7 +251,7 @@ Item {
                                 IconButton {
                                     size: Theme.controlSizeMd
                                     iconSize: 24
-                                    iconOpacity: 0.7
+                                    iconOpacity: Theme.buttonIconSoftOpacity
                                     iconSource: Theme.iconPath + "skip-forward.png"
                                     onClicked: root.controller ? root.controller.next() : undefined
                                 }
@@ -287,13 +287,12 @@ Item {
                             spacing: 8
                             anchors.centerIn: parent
 
-                            Image {
+                            TintedIcon {
                                 source: Theme.iconPath + "list-music.png"
                                 width: 16
                                 height: 16
-                                opacity: 0.65
-                                fillMode: Image.PreserveAspectFit
-                                smooth: true
+                                tintColor: Theme.buttonIconColor
+                                opacity: 0.78
                             }
 
                             Text {

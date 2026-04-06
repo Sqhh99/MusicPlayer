@@ -118,9 +118,9 @@ Item {
                     iconSize: 14
                     iconSource: Theme.iconPath + "shuffle.png"
                     active: root.isShuffle
-                    activeOpacity: 0.9
+                    activeOpacity: Theme.buttonIconStrongOpacity
                     activeBackgroundColor: Theme.accentSoft
-                    iconOpacity: 0.55
+                    iconOpacity: Theme.buttonIconMutedOpacity
                     onClicked: root.toggleShuffle()
                 }
 
@@ -129,7 +129,7 @@ Item {
                 IconButton {
                     size: 34
                     iconSize: 16
-                    iconOpacity: 0.7
+                    iconOpacity: Theme.buttonIconSoftOpacity
                     iconSource: Theme.iconPath + "skip-back.png"
                     onClicked: root.controller ? root.controller.previous() : undefined
                 }
@@ -145,14 +145,14 @@ Item {
                     pressedColor: Theme.materialPrimaryButtonPressedBg
                     showBorder: true
                     borderColor: Theme.materialPrimaryButtonBorder
-                    iconOpacity: 0.9
+                    iconOpacity: Theme.buttonIconStrongOpacity
                     onClicked: root.controller ? root.controller.togglePlayPause() : undefined
                 }
 
                 IconButton {
                     size: 34
                     iconSize: 16
-                    iconOpacity: 0.7
+                    iconOpacity: Theme.buttonIconSoftOpacity
                     iconSource: Theme.iconPath + "skip-forward.png"
                     onClicked: root.controller ? root.controller.next() : undefined
                 }
@@ -164,9 +164,9 @@ Item {
                     iconSize: 14
                     iconSource: Theme.iconPath + "repeat.png"
                     active: root.controller ? root.controller.isLooping : false
-                    activeOpacity: 0.9
+                    activeOpacity: Theme.buttonIconStrongOpacity
                     activeBackgroundColor: Theme.accentSoft
-                    iconOpacity: 0.55
+                    iconOpacity: Theme.buttonIconMutedOpacity
                     onClicked: {
                         if (root.controller) {
                             root.controller.isLooping = !root.controller.isLooping

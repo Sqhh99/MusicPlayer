@@ -62,36 +62,13 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        // Close button - defined first so folderButton can reference it
-        Rectangle {
+        OverlayCloseButton {
             id: closeButton
-            width: 30
-            height: 30
-            radius: 8
             anchors.right: parent.right
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
-            color: closeButtonArea.pressed ? "#e5e7eb" : (closeButtonArea.containsMouse ? "#f3f4f6" : "transparent")
             z: 10
-
-            Image {
-                anchors.centerIn: parent
-                source: Theme.iconPath + "x.png"
-                width: 12
-                height: 12
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-                opacity: closeButtonArea.containsMouse ? 0.9 : 0.6
-            }
-
-            MouseArea {
-                id: closeButtonArea
-                anchors.fill: parent
-                anchors.margins: -5
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.closeRequested()
-            }
+            onClicked: root.closeRequested()
         }
 
         // Folder button - open folder dialog
@@ -102,16 +79,17 @@ Rectangle {
             radius: 8
             x: parent.width - 18 - closeButton.width - 8 - width  // Position left of close button
             anchors.verticalCenter: parent.verticalCenter
-            color: folderButtonArea.pressed ? "#e5e7eb" : (folderButtonArea.containsMouse ? "#f3f4f6" : "transparent")
+            color: folderButtonArea.pressed
+                ? Theme.materialButtonPressedBg
+                : (folderButtonArea.containsMouse ? Theme.materialButtonHoverBg : "transparent")
             z: 10
 
-            Image {
+            TintedIcon {
                 anchors.centerIn: parent
                 source: Theme.iconPath + "folder.png"
                 width: 14
                 height: 14
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                tintColor: Theme.buttonIconColor
                 opacity: folderButtonArea.containsMouse ? 0.9 : 0.6
             }
 
@@ -157,20 +135,11 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: headerDivider
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: header.bottom
-        height: 1
-        color: Theme.surfaceOverlayBorder
-    }
-
     ListView {
         id: listView
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: headerDivider.bottom
+        anchors.top: header.bottom
         anchors.bottom: parent.bottom
         clip: true
         spacing: 6
@@ -192,8 +161,8 @@ Rectangle {
                 anchors.fill: parent
                 radius: 14
                 color: root.currentIndex === itemIndex
-                    ? "#eff6ff"
-                    : (rowItem.hovered ? "#f9fafb" : "transparent")
+                    ? Theme.playlistRowActiveBg
+                    : (rowItem.hovered ? Theme.playlistRowHoverBg : "transparent")
                 opacity: root.currentIndex === itemIndex ? 0.5 : 1
                 border.color: "transparent"
                 border.width: 0

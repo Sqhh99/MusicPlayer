@@ -9,9 +9,10 @@ Item {
     property bool isMiniMode: false
     property bool showPlaylist: false
     property bool showEq: false
+    property bool showSettings: false
     property int snapThreshold: 20
 
-    visible: !root.showPlaylist && !root.showEq
+    visible: !root.showPlaylist && !root.showEq && !root.showSettings
     height: Theme.dragHeight
     z: 1
 
