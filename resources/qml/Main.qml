@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import MusicPlayer
 import "components"
 
@@ -8,12 +9,12 @@ ApplicationWindow {
     id: root
 
     visible: true
-    width: isMiniMode ? Theme.miniWidth : Theme.fullWidth
-    height: isMiniMode ? Theme.miniHeight : Theme.fullHeight
-    minimumWidth: isMiniMode ? Theme.miniWidth : Theme.minWidth
-    minimumHeight: isMiniMode ? Theme.miniHeight : Theme.minHeight
-    maximumWidth: isMiniMode ? Theme.miniWidth : Theme.fullWidth
-    maximumHeight: isMiniMode ? Theme.miniHeight : Theme.fullHeight
+    width: targetWindowWidth
+    height: targetWindowHeight
+    minimumWidth: targetWindowWidth
+    minimumHeight: targetWindowHeight
+    maximumWidth: targetWindowWidth
+    maximumHeight: targetWindowHeight
 
     flags: isPinned ? (Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint) 
                     : (Qt.Window | Qt.FramelessWindowHint)
@@ -22,17 +23,27 @@ ApplicationWindow {
     font.family: Theme.fontFamily
 
     property bool isPinned: false
-
-    property bool isMiniMode: false
+    property string windowMode: "full"
+    readonly property bool isMiniMode: windowMode === "mini"
+    readonly property bool isIslandMode: windowMode === "island"
     property bool showPlaylist: false
     property bool showLyrics: false
     property bool showEq: false
     property bool showSettings: false
     property bool isShuffle: false
     property bool compact: width < 900
+    readonly property int targetWindowWidth: isIslandMode
+        ? Theme.islandWidth
+        : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
+    readonly property int targetWindowHeight: isIslandMode
+        ? Theme.islandHeight
+        : (isMiniMode ? Theme.miniHeight : Theme.fullHeight)
+    readonly property int targetCornerRadius: isIslandMode
+        ? Theme.radiusIsland
+        : (isMiniMode ? Theme.radiusMini : Theme.radiusLarge)
 
     Component.onCompleted: {
-        windowEffects.cornerRadius = isMiniMode ? Theme.radiusMini : Theme.radiusLarge
+        syncWindowChrome()
         playerController.loadSavedPlaylist()
     }
 
@@ -59,6 +70,28 @@ ApplicationWindow {
         root.requestActivate()
     }
 
+    function syncWindowChrome() {
+        windowEffects.cornerRadius = targetCornerRadius
+    }
+
+    function positionIsland(force) {
+        if (!force && !root.isIslandMode) {
+            return
+        }
+        var screenX = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+        var screenWidth = Number.isFinite(Screen.width) && Screen.width > 0
+            ? Screen.width
+            : Theme.islandWidth
+        root.x = screenX + Math.round((screenWidth - Theme.islandWidth) / 2)
+        root.y = Theme.islandTopMargin
+    }
+
+    function closeTransientPanels() {
+        root.showPlaylist = false
+        root.showEq = false
+        root.showSettings = false
+    }
+
     function setShuffleEnabled(enabled) {
         root.isShuffle = enabled
         if (enabled && playerController.isLooping) {
@@ -70,31 +103,69 @@ ApplicationWindow {
         setShuffleEnabled(!root.isShuffle)
     }
 
-    function openSettings() {
-        if (root.isMiniMode) {
-            root.isMiniMode = false
+    function enterFullMode() {
+        if (root.windowMode === "full") {
+            return
         }
-        root.showPlaylist = false
-        root.showEq = false
+        root.windowMode = "full"
+    }
+
+    function enterMiniMode() {
+        if (root.windowMode === "mini") {
+            return
+        }
+        if (root.windowMode === "full") {
+            savedLyricsState = showLyrics
+        }
+        closeTransientPanels()
+        root.showLyrics = false
+        root.windowMode = "mini"
+    }
+
+    function enterIslandMode() {
+        if (root.windowMode === "island") {
+            return
+        }
+        if (root.windowMode === "full") {
+            savedLyricsState = showLyrics
+        }
+        closeTransientPanels()
+        root.showLyrics = false
+        root.isPinned = true
+        positionIsland(true)
+        root.windowMode = "island"
+    }
+
+    function toggleMiniMode() {
+        if (root.isMiniMode) {
+            root.enterFullMode()
+        } else {
+            root.enterMiniMode()
+        }
+    }
+
+    function openSettings() {
+        if (root.windowMode !== "full") {
+            root.enterFullMode()
+        }
+        root.closeTransientPanels()
         root.showSettings = true
     }
 
     // Preserve lyrics state when switching to mini mode
     property bool savedLyricsState: false
 
-    onIsMiniModeChanged: {
-        windowEffects.cornerRadius = isMiniMode ? Theme.radiusMini : Theme.radiusLarge
-        if (isMiniMode) {
-            // Save lyrics state before switching to mini mode
-            savedLyricsState = showLyrics
-            showPlaylist = false
+    onWindowModeChanged: {
+        syncWindowChrome()
+        if (isMiniMode || isIslandMode) {
             showLyrics = false
-            showEq = false
         } else {
-            // Restore lyrics state when switching back to full mode
-            if (savedLyricsState) {
+            if (savedLyricsState && !showSettings) {
                 showLyrics = true
             }
+        }
+        if (isIslandMode) {
+            positionIsland()
         }
     }
 
@@ -133,14 +204,46 @@ ApplicationWindow {
     Behavior on height {
         NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
     }
+    Behavior on x {
+        enabled: !dragArea.isDragging
+        NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
+    }
+    Behavior on y {
+        enabled: !dragArea.isDragging
+        NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
+    }
+
+    onWidthChanged: {
+        if (isIslandMode) {
+            positionIsland()
+        }
+    }
+
+    onHeightChanged: {
+        if (isIslandMode) {
+            positionIsland()
+        }
+    }
+
+    onScreenChanged: {
+        if (isIslandMode) {
+            positionIsland()
+        }
+    }
+
+    onVisibleChanged: {
+        if (visible && isIslandMode) {
+            positionIsland()
+        }
+    }
 
     Rectangle {
         id: surface
         anchors.fill: parent
         anchors.margins: 0
-        radius: isMiniMode ? Theme.radiusMini : Theme.radiusLarge
-        color: Theme.surfaceBg
-        border.color: Theme.surfaceBorder
+        radius: targetCornerRadius
+        color: root.isIslandMode ? Theme.islandBg : Theme.surfaceBg
+        border.color: root.isIslandMode ? Theme.islandBorder : Theme.surfaceBorder
         border.width: 1
         clip: true
 
@@ -155,6 +258,7 @@ ApplicationWindow {
         }
 
         Rectangle {
+            visible: !root.isIslandMode
             width: root.isMiniMode ? 180 : 320
             height: root.isMiniMode ? 120 : 260
             x: root.isMiniMode ? -24 : -72
@@ -164,6 +268,7 @@ ApplicationWindow {
         }
 
         Rectangle {
+            visible: !root.isIslandMode
             width: root.isMiniMode ? 120 : 220
             height: root.isMiniMode ? 120 : 220
             x: width + 90
@@ -180,7 +285,7 @@ ApplicationWindow {
                 id: fullPlayer
                 anchors.fill: parent
                 visible: opacity > 0
-                opacity: (isMiniMode || showPlaylist || showSettings) ? 0 : 1
+                opacity: (isMiniMode || isIslandMode || showPlaylist || showSettings) ? 0 : 1
                 controller: playerController
                 appWindow: root
                 showLyrics: root.showLyrics
@@ -216,10 +321,25 @@ ApplicationWindow {
                 }
             }
 
+            DynamicIsland {
+                id: dynamicIsland
+                width: Theme.islandWidth
+                height: Theme.islandHeight
+                anchors.centerIn: parent
+                visible: opacity > 0
+                opacity: root.isIslandMode ? 1 : 0
+                controller: playerController
+                onOpenMiniRequested: root.enterMiniMode()
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                }
+            }
+
             PlaylistOverlay {
                 id: playlistOverlay
                 anchors.fill: parent
-                open: root.showPlaylist && !root.isMiniMode
+                open: root.showPlaylist && !root.isMiniMode && !root.isIslandMode
                 model: playerController.playlist
                 currentIndex: playerController.currentIndex
                 isPlaying: playerController.isPlaying
@@ -251,11 +371,13 @@ ApplicationWindow {
             anchors.right: parent.right
             anchors.topMargin: 14
             anchors.rightMargin: 16
-            visible: !showPlaylist && !showSettings
+            visible: !showPlaylist && !showSettings && !isIslandMode
             miniMode: root.isMiniMode
+            islandMode: root.isIslandMode
             isPinned: root.isPinned
             settingsOpen: root.showSettings
-            onToggleMiniRequested: root.isMiniMode = !root.isMiniMode
+            onToggleMiniRequested: root.toggleMiniMode()
+            onOpenIslandRequested: root.enterIslandMode()
             onMinimizeRequested: root.showMinimized()
             onCloseRequested: root.hide()
             onTogglePinRequested: root.isPinned = !root.isPinned
@@ -269,6 +391,7 @@ ApplicationWindow {
             anchors.top: parent.top
             appWindow: root
             isMiniMode: root.isMiniMode
+            isIslandMode: root.isIslandMode
             showPlaylist: root.showPlaylist
             showEq: root.showEq
             showSettings: root.showSettings

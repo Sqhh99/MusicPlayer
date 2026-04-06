@@ -64,6 +64,19 @@ QtObject {
         ? (darkMode ? rgba(255, 255, 255, 0.03) : rgba(233, 213, 255, 0.10))
         : rgba(0, 0, 0, 0)
     readonly property color surfaceShadow: darkMode ? rgba(0, 0, 0, 0.50) : rgba(15, 23, 42, 0.09)
+    readonly property color islandBg: darkMode
+        ? rgba(20, 20, 22, 0.92 + (0.04 * materialAmount))
+        : rgba(250, 250, 251, 0.94 + (0.03 * materialAmount))
+    readonly property color islandBorder: darkMode
+        ? rgba(255, 255, 255, 0.12 + (0.08 * materialAmount))
+        : rgba(255, 255, 255, 0.62 + (0.12 * materialAmount))
+    readonly property color islandWaveColor: "#2ef2c5"
+    readonly property color islandWaveGlowColor: darkMode
+        ? rgba(46, 242, 197, 0.42)
+        : rgba(46, 242, 197, 0.28)
+    readonly property color islandWaveBg: darkMode
+        ? rgba(0, 0, 0, 0.26)
+        : rgba(17, 24, 39, 0.10)
     readonly property color materialButtonBg: darkMode
         ? rgba(255, 255, 255, 0.10 + (0.08 * buttonMaterialAmount))
         : rgba(255, 255, 255, 0.22 + (0.20 * buttonMaterialAmount))
@@ -143,16 +156,29 @@ QtObject {
     readonly property int fullHeight: 712
     readonly property int miniWidth: 558
     readonly property int miniHeight: 180
+    readonly property int islandWidth: 160
+    readonly property int islandHeight: 44
     readonly property int minWidth: 980
     readonly property int minHeight: 712
 
     readonly property int outerPadding: 40
     readonly property int outerPaddingMini: 14
+    readonly property int islandTopMargin: 8
     readonly property int radiusLarge: 8
     readonly property int radiusMini: 8
+    readonly property int radiusIsland: 22
+    readonly property int islandWaveBubbleWidth: 44
+    readonly property int islandWaveBubbleHeight: 24
+    readonly property int islandWaveBarCount: 5
+    readonly property int islandWaveBarWidth: 4
+    readonly property int islandWaveGap: 2
+    readonly property int islandWaveIdleHeight: 4
+    readonly property int islandWaveMidHeight: 8
+    readonly property int islandWavePeakHeight: 13
 
     readonly property int albumSize: 300
     readonly property int albumSizeMini: 128
+    readonly property int islandCoverSize: 26
     readonly property int albumRadius: 28
     readonly property int albumRadiusMini: 18
     readonly property int albumColumnWidth: 396

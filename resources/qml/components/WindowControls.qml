@@ -6,10 +6,12 @@ Item {
     id: root
 
     property bool miniMode: false
+    property bool islandMode: false
     property bool isPinned: false
     property bool settingsOpen: false
 
     signal toggleMiniRequested()
+    signal openIslandRequested()
     signal minimizeRequested()
     signal closeRequested()
     signal togglePinRequested()
@@ -56,6 +58,17 @@ Item {
             iconOpacity: Theme.buttonIconSoftOpacity
             active: false
             onClicked: root.toggleMiniRequested()
+        }
+
+        IconButton {
+            size: 26
+            iconSize: 12
+            iconSource: Theme.iconPath + "pill.png"
+            iconColor: Theme.buttonIconColor
+            iconOpacity: root.islandMode ? Theme.buttonIconStrongOpacity : Theme.buttonIconSoftOpacity
+            active: root.islandMode
+            activeBackgroundColor: Theme.accentSoft
+            onClicked: root.openIslandRequested()
         }
 
         // Pin button - between mini mode and minimize

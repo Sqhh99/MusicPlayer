@@ -69,6 +69,7 @@ qt_add_qml_module(MusicPlayer
         resources/qml/components/EqualizerPanel.qml
         resources/qml/components/MiniPlayer.qml
         resources/qml/components/FullPlayer.qml
+        resources/qml/components/DynamicIsland.qml
         resources/qml/components/WindowDragArea.qml
         resources/qml/components/AppShortcuts.qml
         resources/qml/components/TrayIcon.qml
@@ -80,6 +81,7 @@ qt_add_qml_module(MusicPlayer
         resources/icons/list-music.png
         resources/icons/picture-in-picture.png
         resources/icons/picture-in-picture-2.png
+        resources/icons/pill.png
         resources/icons/mic-vocal.png
         resources/icons/minus.png
         resources/icons/pause.png

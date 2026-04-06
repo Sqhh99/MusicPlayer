@@ -7,12 +7,13 @@ Item {
 
     property var appWindow
     property bool isMiniMode: false
+    property bool isIslandMode: false
     property bool showPlaylist: false
     property bool showEq: false
     property bool showSettings: false
     property int snapThreshold: 20
 
-    visible: !root.showPlaylist && !root.showEq && !root.showSettings
+    visible: !root.isIslandMode && !root.showPlaylist && !root.showEq && !root.showSettings
     height: Theme.dragHeight
     z: 1
 
