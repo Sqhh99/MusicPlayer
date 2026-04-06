@@ -17,8 +17,7 @@ Rectangle {
     opacity: open ? 1 : 0
 
     color: Theme.surfaceOverlayBg
-    border.color: Theme.surfaceOverlayBorder
-    border.width: 1
+    border.width: 0
     clip: true
     z: 5
 
@@ -94,6 +93,12 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: sidebar.right
         anchors.right: parent.right
+        clip: true
+
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.surfaceOverlayBg
+        }
 
         Rectangle {
             id: header
@@ -119,26 +124,14 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.SizeAllCursor
 
-                property point dragStartPos: Qt.point(0, 0)
-                property bool dragging: false
-
                 onPressed: (mouse) => {
                     if (!root.appWindow || mouse.button !== Qt.LeftButton) {
                         return
                     }
-                    dragging = true
-                    dragStartPos = Qt.point(mouse.x, mouse.y)
-                }
-                onPositionChanged: (mouse) => {
-                    if (!dragging || !root.appWindow) {
-                        return
+                    if (root.appWindow.startSystemMove) {
+                        root.appWindow.startSystemMove()
                     }
-                    var globalPos = mapToGlobal(mouse.x, mouse.y)
-                    root.appWindow.x = globalPos.x - dragStartPos.x
-                    root.appWindow.y = globalPos.y - dragStartPos.y
                 }
-                onReleased: dragging = false
-                onCanceled: dragging = false
             }
         }
 
