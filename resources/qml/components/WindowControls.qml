@@ -51,7 +51,7 @@ Item {
         IconButton {
             size: 26
             iconSize: 12
-            iconSource: Theme.iconPath + "maximize-2.png"
+            iconSource: Theme.iconPath + (root.miniMode ? "picture-in-picture-2.png" : "picture-in-picture.png")
             iconColor: Theme.buttonIconColor
             iconOpacity: Theme.buttonIconSoftOpacity
             active: false

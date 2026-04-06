@@ -29,7 +29,7 @@ Platform.SystemTrayIcon {
             text: root.appWindow && root.appWindow.visible ? "隐藏窗口" : "显示窗口"
             icon.source: root.appWindow && root.appWindow.visible
                 ? "qrc:/qt/qml/MusicPlayer/resources/icons/minus.png"
-                : "qrc:/qt/qml/MusicPlayer/resources/icons/maximize-2.png"
+                : "qrc:/qt/qml/MusicPlayer/resources/icons/picture-in-picture.png"
             onTriggered: {
                 if (!root.appWindow) {
                     return

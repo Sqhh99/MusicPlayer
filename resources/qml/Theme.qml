@@ -153,8 +153,8 @@ QtObject {
 
     readonly property int albumSize: 300
     readonly property int albumSizeMini: 128
-    readonly property int albumRadius: 36
-    readonly property int albumRadiusMini: 22
+    readonly property int albumRadius: 28
+    readonly property int albumRadiusMini: 18
     readonly property int albumColumnWidth: 396
     readonly property int columnSpacing: 32
     readonly property int titleSize: 34

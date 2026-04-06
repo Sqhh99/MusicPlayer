@@ -234,17 +234,12 @@ Item {
                                 }
 
                                 IconButton {
-                                    size: Theme.controlSizeXl
-                                    iconSize: 28
+                                    size: Theme.controlSizeMd
+                                    iconSize: 24
                                     iconOpacity: Theme.buttonIconStrongOpacity
                                     iconSource: root.controller && root.controller.isPlaying
                                         ? Theme.iconPath + "pause.png"
                                         : Theme.iconPath + "play.png"
-                                    backgroundColor: Theme.materialPrimaryButtonBg
-                                    hoverColor: Theme.materialPrimaryButtonHoverBg
-                                    pressedColor: Theme.materialPrimaryButtonPressedBg
-                                    showBorder: true
-                                    borderColor: Theme.materialPrimaryButtonBorder
                                     onClicked: root.controller ? root.controller.togglePlayPause() : undefined
                                 }
 

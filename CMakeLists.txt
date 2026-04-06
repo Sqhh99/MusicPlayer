@@ -78,7 +78,8 @@ qt_add_qml_module(MusicPlayer
         resources/icons/listen1.ico
         resources/icons/chevron-down.png
         resources/icons/list-music.png
-        resources/icons/maximize-2.png
+        resources/icons/picture-in-picture.png
+        resources/icons/picture-in-picture-2.png
         resources/icons/mic-vocal.png
         resources/icons/minus.png
         resources/icons/pause.png

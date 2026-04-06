@@ -1,4 +1,5 @@
 import QtQuick
+import Qt5Compat.GraphicalEffects
 import MusicPlayer
 
 Item {
@@ -32,23 +33,38 @@ Item {
         width: root.width
         height: root.height
         radius: root.cornerRadius > 0 ? root.cornerRadius : Math.max(18, Math.round(root.width * 0.14))
+        antialiasing: true
         color: root.source.length > 0 ? "transparent" : Theme.albumPlaceholderBg
         border.color: root.source.length > 0 ? "transparent" : Theme.albumPlaceholderBorder
         border.width: root.source.length > 0 ? 0 : 1
-        clip: true
         scale: root.playing ? 1.0 : 0.96
         Behavior on scale {
             NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
         }
 
-        // Album art image - simple version without problematic layer.effect
         Image {
-            id: albumImage
+            id: albumMask
             anchors.fill: parent
+            visible: false
             source: root.source
-            visible: root.source.length > 0
             fillMode: Image.PreserveAspectCrop
             smooth: true
+        }
+
+        Rectangle {
+            id: albumMaskShape
+            anchors.fill: parent
+            visible: false
+            radius: cover.radius
+            antialiasing: true
+            color: "black"
+        }
+
+        OpacityMask {
+            anchors.fill: parent
+            visible: root.source.length > 0
+            source: albumMask
+            maskSource: albumMaskShape
         }
 
         // Placeholder gradient when no image
@@ -56,10 +72,19 @@ Item {
             anchors.fill: parent
             radius: cover.radius
             visible: root.source.length === 0
+            antialiasing: true
             gradient: Gradient {
                 GradientStop { position: 0.0; color: Theme.albumPlaceholderStart }
                 GradientStop { position: 1.0; color: Theme.albumPlaceholderEnd }
             }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: cover.radius
+            visible: root.source.length > 0
+            color: "transparent"
+            border.color: "transparent"
         }
     }
 }
