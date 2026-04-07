@@ -29,6 +29,7 @@ public:
     void setDarkModeEnabled(bool enabled);
     int windowMaskRadius() const;
     void setWindowMaskRadius(int radius);
+    Q_INVOKABLE void applyNow();
 
 signals:
     void acrylicEnabledChanged();

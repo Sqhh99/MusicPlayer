@@ -241,6 +241,12 @@ void WindowEffectsController::setWindowMaskRadius(int radius)
     scheduleApply();
 }
 
+void WindowEffectsController::applyNow()
+{
+    m_applyScheduled = false;
+    applyEffects();
+}
+
 bool WindowEffectsController::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == m_window) {

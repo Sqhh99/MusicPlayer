@@ -38,7 +38,7 @@ ApplicationWindow {
     property real transitionProgress: 0
     property bool pendingOpenSettings: false
     property real displayedCornerRadius: targetCornerRadius
-    readonly property string shellMode: transitioning && incomingMode.length > 0 ? incomingMode : windowMode
+    readonly property string shellMode: transitioning && incomingMode === "island" ? "island" : windowMode
     readonly property int targetWindowWidth: isIslandMode
         ? Theme.islandWidth
         : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
@@ -85,6 +85,7 @@ ApplicationWindow {
         windowEffects.systemBackdropType = 1
         windowEffects.darkModeEnabled = Theme.darkMode
         windowEffects.windowMaskRadius = visualMode === "island" ? Theme.radiusIsland : 0
+        windowEffects.applyNow()
     }
 
     function positionIsland(force) {
@@ -121,10 +122,26 @@ ApplicationWindow {
     function modeOpacity(mode) {
         if (root.transitioning) {
             if (root.outgoingMode === mode) {
-                return root.modeAllowsDisplay(mode) ? (1 - root.transitionProgress) : 0
+                if (!root.modeAllowsDisplay(mode)) {
+                    return 0
+                }
+                if (mode === "island" && root.incomingMode === "mini") {
+                    return root.transitionProgress < 0.62
+                        ? 1
+                        : Math.max(0, 1 - ((root.transitionProgress - 0.62) / 0.38))
+                }
+                return 1 - root.transitionProgress
             }
             if (root.incomingMode === mode) {
-                return root.modeAllowsDisplay(mode) ? root.transitionProgress : 0
+                if (!root.modeAllowsDisplay(mode)) {
+                    return 0
+                }
+                if (mode === "mini" && root.outgoingMode === "island") {
+                    return root.transitionProgress < 0.58
+                        ? 0
+                        : Math.min(1, (root.transitionProgress - 0.58) / 0.42)
+                }
+                return root.transitionProgress
             }
             return 0
         }
@@ -137,9 +154,20 @@ ApplicationWindow {
             return 1
         }
         if (root.outgoingMode === mode) {
+            if (mode === "island" && root.incomingMode === "mini") {
+                return root.transitionProgress < 0.62
+                    ? 1
+                    : 1 - (0.02 * ((root.transitionProgress - 0.62) / 0.38))
+            }
             return 1 - (0.02 * root.transitionProgress)
         }
         if (root.incomingMode === mode) {
+            if (mode === "mini" && root.outgoingMode === "island") {
+                if (root.transitionProgress < 0.58) {
+                    return 0.98
+                }
+                return 0.98 + (0.02 * ((root.transitionProgress - 0.58) / 0.42))
+            }
             return 0.98 + (0.02 * root.transitionProgress)
         }
         return 1
@@ -173,6 +201,9 @@ ApplicationWindow {
         pendingOpenSettings = false
         closeTransientPanels()
         root.showLyrics = false
+        if (root.windowMode === "island") {
+            syncWindowChrome("mini")
+        }
         modeTransition.switchTo("mini")
     }
 
