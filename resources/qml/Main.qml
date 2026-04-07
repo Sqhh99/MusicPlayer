@@ -33,6 +33,11 @@ ApplicationWindow {
     property bool isShuffle: false
     property bool compact: width < 900
     property bool transitioning: false
+    property string outgoingMode: ""
+    property string incomingMode: ""
+    property real transitionProgress: 0
+    property bool pendingOpenSettings: false
+    property real displayedCornerRadius: targetCornerRadius
     readonly property int targetWindowWidth: isIslandMode
         ? Theme.islandWidth
         : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
@@ -45,6 +50,7 @@ ApplicationWindow {
     readonly property int nativeCornerRadius: targetCornerRadius
 
     Component.onCompleted: {
+        displayedCornerRadius = targetCornerRadius
         syncWindowChrome()
         playerController.loadSavedPlaylist()
     }
@@ -94,6 +100,46 @@ ApplicationWindow {
         root.showSettings = false
     }
 
+    function modeAllowsDisplay(mode) {
+        switch (mode) {
+        case "full":
+            return !root.showPlaylist && !root.showSettings
+        case "mini":
+            return !root.showSettings
+        case "island":
+            return !root.showSettings
+        default:
+            return false
+        }
+    }
+
+    function modeOpacity(mode) {
+        if (root.transitioning) {
+            if (root.outgoingMode === mode) {
+                return root.modeAllowsDisplay(mode) ? (1 - root.transitionProgress) : 0
+            }
+            if (root.incomingMode === mode) {
+                return root.modeAllowsDisplay(mode) ? root.transitionProgress : 0
+            }
+            return 0
+        }
+
+        return root.windowMode === mode && root.modeAllowsDisplay(mode) ? 1 : 0
+    }
+
+    function modeScale(mode) {
+        if (!root.transitioning) {
+            return 1
+        }
+        if (root.outgoingMode === mode) {
+            return 1 - (0.02 * root.transitionProgress)
+        }
+        if (root.incomingMode === mode) {
+            return 0.98 + (0.02 * root.transitionProgress)
+        }
+        return 1
+    }
+
     function setShuffleEnabled(enabled) {
         root.isShuffle = enabled
         if (enabled && playerController.isLooping) {
@@ -119,6 +165,7 @@ ApplicationWindow {
         if (root.windowMode === "full") {
             savedLyricsState = showLyrics
         }
+        pendingOpenSettings = false
         closeTransientPanels()
         root.showLyrics = false
         modeTransition.switchTo("mini")
@@ -131,6 +178,7 @@ ApplicationWindow {
         if (root.windowMode === "full") {
             savedLyricsState = showLyrics
         }
+        pendingOpenSettings = false
         closeTransientPanels()
         root.showLyrics = false
         root.isPinned = true
@@ -147,8 +195,11 @@ ApplicationWindow {
 
     function openSettings() {
         if (root.windowMode !== "full") {
+            pendingOpenSettings = true
             root.enterFullMode()
+            return
         }
+        pendingOpenSettings = false
         root.closeTransientPanels()
         root.showSettings = true
     }
@@ -160,13 +211,12 @@ ApplicationWindow {
         syncWindowChrome()
         if (isMiniMode || isIslandMode) {
             showLyrics = false
-        } else {
-            if (savedLyricsState && !showSettings) {
-                showLyrics = true
-            }
         }
         if (isIslandMode) {
             positionIsland()
+        }
+        if (!root.transitioning) {
+            root.displayedCornerRadius = targetCornerRadius
         }
     }
 
@@ -206,6 +256,8 @@ ApplicationWindow {
 
         function switchTo(mode) {
             pendingMode = mode
+            root.outgoingMode = root.windowMode
+            root.incomingMode = mode
             transitionAnimation.stop()
             transitionAnimation.start()
         }
@@ -268,19 +320,10 @@ ApplicationWindow {
         ScriptAction {
             script: {
                 root.transitioning = true
+                root.transitionProgress = 0
             }
         }
 
-        // Phase 1: Fade out current content
-        NumberAnimation {
-            target: contentArea
-            property: "opacity"
-            to: 0
-            duration: 120
-            easing.type: Easing.OutQuad
-        }
-
-        // Phase 2: Resize & reposition window, animate corner radius
         ParallelAnimation {
             NumberAnimation {
                 target: root
@@ -311,32 +354,36 @@ ApplicationWindow {
                 easing.type: Easing.InOutCubic
             }
             NumberAnimation {
-                target: surface
-                property: "radius"
+                target: root
+                property: "displayedCornerRadius"
                 to: modeTransition.targetR()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "transitionProgress"
+                to: 1
                 duration: 360
                 easing.type: Easing.InOutCubic
             }
         }
 
-        // Phase 3: Apply new mode, then fade in
         ScriptAction {
             script: {
                 root.windowMode = modeTransition.pendingMode
                 syncWindowChrome()
-            }
-        }
-
-        NumberAnimation {
-            target: contentArea
-            property: "opacity"
-            to: 1
-            duration: 160
-            easing.type: Easing.InQuad
-        }
-
-        ScriptAction {
-            script: {
+                if (root.windowMode === "full" && root.pendingOpenSettings) {
+                    root.pendingOpenSettings = false
+                    root.closeTransientPanels()
+                    root.showSettings = true
+                } else if (root.windowMode === "full" && root.savedLyricsState && !root.showSettings) {
+                    root.showLyrics = true
+                }
+                root.displayedCornerRadius = root.targetCornerRadius
+                root.outgoingMode = ""
+                root.incomingMode = ""
+                root.transitionProgress = 0
                 root.transitioning = false
             }
         }
@@ -379,7 +426,7 @@ ApplicationWindow {
         id: surface
         anchors.fill: parent
         anchors.margins: 0
-        radius: root.transitioning ? surface.radius : targetCornerRadius
+        radius: root.displayedCornerRadius
         color: root.isIslandMode ? Theme.islandBg : Theme.surfaceBg
         border.color: root.isIslandMode ? Theme.islandBorder : Theme.surfaceBorder
         border.width: root.isIslandMode ? 0 : 1
@@ -419,58 +466,64 @@ ApplicationWindow {
             id: contentArea
             anchors.fill: parent
 
-            FullPlayer {
-                id: fullPlayer
+            Item {
+                id: fullWrapper
                 anchors.fill: parent
                 visible: opacity > 0
-                opacity: (isMiniMode || isIslandMode || showPlaylist || showSettings) ? 0 : 1
-                controller: playerController
-                appWindow: root
-                showLyrics: root.showLyrics
-                showEq: root.showEq
-                showPlaylist: root.showPlaylist
-                isShuffle: root.isShuffle
-                compact: root.compact
-                lyrics: root.lyricsLines
-                onToggleLyrics: root.showLyrics = !root.showLyrics
-                onToggleEq: root.showEq = !root.showEq
-                onTogglePlaylist: root.showPlaylist = !root.showPlaylist
-                onToggleShuffle: root.toggleShuffle()
-                onOpenFilesRequested: fileDialog.open()
+                opacity: root.modeOpacity("full")
+                scale: root.modeScale("full")
 
-                Behavior on opacity {
-                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                FullPlayer {
+                    id: fullPlayer
+                    anchors.fill: parent
+                    controller: playerController
+                    appWindow: root
+                    showLyrics: root.showLyrics
+                    showEq: root.showEq
+                    showPlaylist: root.showPlaylist
+                    isShuffle: root.isShuffle
+                    compact: root.compact
+                    lyrics: root.lyricsLines
+                    onToggleLyrics: root.showLyrics = !root.showLyrics
+                    onToggleEq: root.showEq = !root.showEq
+                    onTogglePlaylist: root.showPlaylist = !root.showPlaylist
+                    onToggleShuffle: root.toggleShuffle()
+                    onOpenFilesRequested: fileDialog.open()
                 }
             }
 
-            MiniPlayer {
-                id: miniPlayer
+            Item {
+                id: miniWrapper
                 anchors.fill: parent
                 visible: opacity > 0
-                opacity: (isMiniMode && !showSettings) ? 1 : 0
-                controller: playerController
-                title: playerController.currentSong
-                artist: "本地音乐"
-                isShuffle: root.isShuffle
-                onToggleShuffle: root.toggleShuffle()
+                opacity: root.modeOpacity("mini")
+                scale: root.modeScale("mini")
 
-                Behavior on opacity {
-                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                MiniPlayer {
+                    id: miniPlayer
+                    anchors.fill: parent
+                    controller: playerController
+                    title: playerController.currentSong
+                    artist: "本地音乐"
+                    isShuffle: root.isShuffle
+                    onToggleShuffle: root.toggleShuffle()
                 }
             }
 
-            DynamicIsland {
-                id: dynamicIsland
-                width: Theme.islandWidth
-                height: Theme.islandHeight
-                anchors.centerIn: parent
+            Item {
+                id: islandWrapper
+                anchors.fill: parent
                 visible: opacity > 0
-                opacity: root.isIslandMode ? 1 : 0
-                controller: playerController
-                onOpenMiniRequested: root.enterMiniMode()
+                opacity: root.modeOpacity("island")
+                scale: root.modeScale("island")
 
-                Behavior on opacity {
-                    NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
+                DynamicIsland {
+                    id: dynamicIsland
+                    width: Theme.islandWidth
+                    height: Theme.islandHeight
+                    anchors.centerIn: parent
+                    controller: playerController
+                    onOpenMiniRequested: root.enterMiniMode()
                 }
             }
 
@@ -509,7 +562,7 @@ ApplicationWindow {
             anchors.right: parent.right
             anchors.topMargin: 14
             anchors.rightMargin: 16
-            visible: !showPlaylist && !showSettings && !isIslandMode
+            visible: !showPlaylist && !showSettings && !isIslandMode && !transitioning
             miniMode: root.isMiniMode
             islandMode: root.isIslandMode
             isPinned: root.isPinned
