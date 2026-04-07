@@ -94,13 +94,6 @@ Item {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
 
-            Rectangle {
-                anchors.fill: parent
-                radius: height / 2
-                color: Theme.islandWaveBg
-                border.width: 0
-            }
-
             Timer {
                 id: pulseTimer
                 interval: 160
