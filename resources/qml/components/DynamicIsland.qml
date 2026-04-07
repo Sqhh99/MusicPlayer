@@ -66,20 +66,15 @@ Item {
         onClicked: root.openMiniRequested()
     }
 
-    Rectangle {
+    Item {
         anchors.fill: parent
-        radius: Theme.radiusIsland
-        color: "transparent"
-        border.width: 0
 
-        Rectangle {
+        Item {
             width: 44
             height: 44
-            radius: 22
             anchors.left: parent.left
             anchors.leftMargin: 0
             anchors.verticalCenter: parent.verticalCenter
-            color: "transparent"
 
             AlbumArt {
                 anchors.centerIn: parent

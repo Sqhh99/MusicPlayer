@@ -67,19 +67,28 @@ QtObject {
         ? (darkMode ? rgba(255, 255, 255, 0.03) : rgba(233, 213, 255, 0.10))
         : rgba(0, 0, 0, 0)
     readonly property color surfaceShadow: darkMode ? rgba(0, 0, 0, 0.50) : rgba(15, 23, 42, 0.09)
-    readonly property color islandBg: darkMode
-        ? rgba(20, 20, 22, 0.92 + (0.04 * materialAmount))
-        : rgba(250, 250, 251, 0.94 + (0.03 * materialAmount))
-    readonly property color islandBorder: darkMode
-        ? rgba(255, 255, 255, 0.12 + (0.08 * materialAmount))
-        : rgba(255, 255, 255, 0.62 + (0.12 * materialAmount))
+    readonly property color islandSurfaceBg: darkMode
+        ? rgba(12, 12, 14, 0.80 + (0.12 * materialAmount))
+        : rgba(248, 248, 249, 0.88 + (0.08 * materialAmount))
+    readonly property color islandSurfaceBorder: darkMode
+        ? rgba(255, 255, 255, 0.10 + (0.08 * materialAmount))
+        : rgba(255, 255, 255, 0.52 + (0.18 * materialAmount))
+    readonly property color islandSurfaceHighlight: darkMode
+        ? rgba(255, 255, 255, 0.05 + (0.04 * materialAmount))
+        : rgba(255, 255, 255, 0.34 + (0.12 * materialAmount))
+    readonly property color islandSurfaceMidHighlight: darkMode
+        ? rgba(255, 255, 255, 0.03 + (0.03 * materialAmount))
+        : rgba(255, 255, 255, 0.13 + (0.05 * materialAmount))
+    readonly property color islandSurfaceBottomTint: darkMode
+        ? rgba(255, 255, 255, 0.02 + (0.02 * materialAmount))
+        : rgba(203, 213, 225, 0.05 + (0.05 * materialAmount))
     readonly property color islandWaveColor: "#2ef2c5"
     readonly property color islandWaveGlowColor: darkMode
         ? rgba(46, 242, 197, 0.42)
         : rgba(46, 242, 197, 0.28)
     readonly property color islandWaveBg: darkMode
-        ? rgba(0, 0, 0, 0.26)
-        : rgba(17, 24, 39, 0.10)
+        ? rgba(255, 255, 255, 0.08 + (0.10 * buttonMaterialAmount))
+        : rgba(255, 255, 255, 0.26 + (0.12 * buttonMaterialAmount))
     readonly property color materialButtonBg: darkMode
         ? rgba(255, 255, 255, 0.10 + (0.08 * buttonMaterialAmount))
         : rgba(255, 255, 255, 0.22 + (0.20 * buttonMaterialAmount))
@@ -169,7 +178,7 @@ QtObject {
     readonly property int islandTopMargin: 8
     readonly property int radiusLarge: 8
     readonly property int radiusMini: 8
-    readonly property int radiusIsland: 22
+    readonly property int radiusIsland: Math.round(islandHeight / 2)
     readonly property int islandWaveBubbleWidth: 44
     readonly property int islandWaveBubbleHeight: 24
     readonly property int islandWaveBarCount: 5

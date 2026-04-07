@@ -78,8 +78,11 @@ ApplicationWindow {
         root.requestActivate()
     }
 
-    function syncWindowChrome() {
-        windowEffects.cornerRadius = nativeCornerRadius
+    function syncWindowChrome(mode) {
+        var visualMode = mode !== undefined ? mode : root.windowMode
+        windowEffects.cornerRadius = visualMode === "island" ? 0 : nativeCornerRadius
+        windowEffects.systemBackdropType = 1
+        windowEffects.darkModeEnabled = Theme.darkMode
     }
 
     function positionIsland(force) {
@@ -182,6 +185,7 @@ ApplicationWindow {
         closeTransientPanels()
         root.showLyrics = false
         root.isPinned = true
+        syncWindowChrome("island")
         modeTransition.switchTo("island")
     }
 
@@ -246,6 +250,13 @@ ApplicationWindow {
             if (playerController.isLooping && root.isShuffle) {
                 root.isShuffle = false
             }
+        }
+    }
+
+    Connections {
+        target: appSettings
+        function onThemeModeChanged() {
+            syncWindowChrome()
         }
     }
 
@@ -422,23 +433,32 @@ ApplicationWindow {
         }
     }
 
-    Rectangle {
-        id: surface
-        anchors.fill: parent
-        anchors.margins: 0
-        radius: root.displayedCornerRadius
-        color: root.isIslandMode ? Theme.islandBg : Theme.surfaceBg
-        border.color: root.isIslandMode ? Theme.islandBorder : Theme.surfaceBorder
-        border.width: root.isIslandMode ? 0 : 1
+        Rectangle {
+            id: surface
+            anchors.fill: parent
+            anchors.margins: 0
+            radius: root.displayedCornerRadius
+        color: root.isIslandMode ? Theme.islandSurfaceBg : Theme.surfaceBg
+        border.color: root.isIslandMode ? Theme.islandSurfaceBorder : Theme.surfaceBorder
+        border.width: 1
         clip: true
 
         Rectangle {
             anchors.fill: parent
             color: "transparent"
             gradient: Gradient {
-                GradientStop { position: 0.0; color: Theme.surfaceHighlight }
-                GradientStop { position: 0.45; color: Theme.surfaceMidHighlight }
-                GradientStop { position: 1.0; color: Theme.surfaceBottomTint }
+                GradientStop {
+                    position: 0.0
+                    color: root.isIslandMode ? Theme.islandSurfaceHighlight : Theme.surfaceHighlight
+                }
+                GradientStop {
+                    position: 0.45
+                    color: root.isIslandMode ? Theme.islandSurfaceMidHighlight : Theme.surfaceMidHighlight
+                }
+                GradientStop {
+                    position: 1.0
+                    color: root.isIslandMode ? Theme.islandSurfaceBottomTint : Theme.surfaceBottomTint
+                }
             }
         }
 

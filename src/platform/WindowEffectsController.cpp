@@ -23,8 +23,18 @@ enum DwmWindowCornerPreference {
     DWMWCP_ROUNDSMALL = 3
 };
 
+enum DwmSystemBackdropType {
+    DWMSBT_AUTO = 0,
+    DWMSBT_NONE = 1,
+    DWMSBT_MAINWINDOW = 2,
+    DWMSBT_TRANSIENTWINDOW = 3,
+    DWMSBT_TABBEDWINDOW = 4
+};
+
 constexpr DWORD DWMWA_WINDOW_CORNER_PREFERENCE = 33;
 constexpr DWORD DWMWA_BORDER_COLOR = 34;
+constexpr DWORD DWMWA_SYSTEMBACKDROP_TYPE = 38;
+constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
 constexpr COLORREF DWMWA_COLOR_NONE = 0xFFFFFFFE;
 
 DwmSetWindowAttributeFn resolveDwmSetWindowAttribute()
@@ -34,27 +44,61 @@ DwmSetWindowAttributeFn resolveDwmSetWindowAttribute()
     return fn;
 }
 
-void applyWindowCornerPreference(HWND hwnd, int radius)
+bool applyWindowCornerPreference(HWND hwnd, int radius)
 {
     const auto dwmSetWindowAttribute = resolveDwmSetWindowAttribute();
     if (!hwnd || !dwmSetWindowAttribute) {
-        return;
+        return false;
     }
 
     const DwmWindowCornerPreference preference =
         radius <= 0 ? DWMWCP_DONOTROUND
                     : (radius <= 4 ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND);
-    dwmSetWindowAttribute(hwnd,
-                          DWMWA_WINDOW_CORNER_PREFERENCE,
-                          &preference,
-                          sizeof(preference));
+    const HRESULT cornerHr = dwmSetWindowAttribute(hwnd,
+                                                   DWMWA_WINDOW_CORNER_PREFERENCE,
+                                                   &preference,
+                                                   sizeof(preference));
 
     // Suppress the system-drawn frame border so it does not glow against the QML surface.
     const COLORREF borderColor = DWMWA_COLOR_NONE;
-    dwmSetWindowAttribute(hwnd,
-                          DWMWA_BORDER_COLOR,
-                          &borderColor,
-                          sizeof(borderColor));
+    const HRESULT borderHr = dwmSetWindowAttribute(hwnd,
+                                                   DWMWA_BORDER_COLOR,
+                                                   &borderColor,
+                                                   sizeof(borderColor));
+    return SUCCEEDED(cornerHr) || SUCCEEDED(borderHr);
+}
+
+bool applySystemBackdropType(HWND hwnd, int backdropType)
+{
+    const auto dwmSetWindowAttribute = resolveDwmSetWindowAttribute();
+    if (!hwnd || !dwmSetWindowAttribute) {
+        return false;
+    }
+
+    const int boundedType = qBound(static_cast<int>(DWMSBT_AUTO),
+                                   backdropType,
+                                   static_cast<int>(DWMSBT_TABBEDWINDOW));
+    const auto type = static_cast<DwmSystemBackdropType>(boundedType);
+    const HRESULT hr = dwmSetWindowAttribute(hwnd,
+                                             DWMWA_SYSTEMBACKDROP_TYPE,
+                                             &type,
+                                             sizeof(type));
+    return SUCCEEDED(hr);
+}
+
+bool applyImmersiveDarkMode(HWND hwnd, bool enabled)
+{
+    const auto dwmSetWindowAttribute = resolveDwmSetWindowAttribute();
+    if (!hwnd || !dwmSetWindowAttribute) {
+        return false;
+    }
+
+    const BOOL darkMode = enabled ? TRUE : FALSE;
+    const HRESULT hr = dwmSetWindowAttribute(hwnd,
+                                             DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                             &darkMode,
+                                             sizeof(darkMode));
+    return SUCCEEDED(hr);
 }
 
 #endif
@@ -105,6 +149,16 @@ int WindowEffectsController::cornerRadius() const
     return m_cornerRadius;
 }
 
+int WindowEffectsController::systemBackdropType() const
+{
+    return m_systemBackdropType;
+}
+
+bool WindowEffectsController::darkModeEnabled() const
+{
+    return m_darkModeEnabled;
+}
+
 void WindowEffectsController::setCornerRadius(int radius)
 {
     radius = qMax(0, radius);
@@ -114,6 +168,29 @@ void WindowEffectsController::setCornerRadius(int radius)
 
     m_cornerRadius = radius;
     emit cornerRadiusChanged();
+    scheduleApply();
+}
+
+void WindowEffectsController::setSystemBackdropType(int type)
+{
+    type = qBound(1, type, 4);
+    if (m_systemBackdropType == type) {
+        return;
+    }
+
+    m_systemBackdropType = type;
+    emit systemBackdropTypeChanged();
+    scheduleApply();
+}
+
+void WindowEffectsController::setDarkModeEnabled(bool enabled)
+{
+    if (m_darkModeEnabled == enabled) {
+        return;
+    }
+
+    m_darkModeEnabled = enabled;
+    emit darkModeEnabledChanged();
     scheduleApply();
 }
 
@@ -165,7 +242,14 @@ void WindowEffectsController::applyEffects()
     }
 
     const auto hwnd = reinterpret_cast<HWND>(m_window->winId());
-    applyWindowCornerPreference(hwnd, m_cornerRadius);
+    const bool cornerApplied = applyWindowCornerPreference(hwnd, m_cornerRadius);
+    const bool backdropApplied = applySystemBackdropType(hwnd, m_systemBackdropType);
+    applyImmersiveDarkMode(hwnd, m_darkModeEnabled);
+    setAcrylicEnabled(backdropApplied && m_systemBackdropType == DWMSBT_TRANSIENTWINDOW);
+    if (!cornerApplied && !backdropApplied) {
+        setAcrylicEnabled(false);
+    }
+    return;
 #endif
     setAcrylicEnabled(false);
 }
