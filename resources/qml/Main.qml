@@ -38,6 +38,7 @@ ApplicationWindow {
     property real transitionProgress: 0
     property bool pendingOpenSettings: false
     property real displayedCornerRadius: targetCornerRadius
+    readonly property string shellMode: transitioning && incomingMode.length > 0 ? incomingMode : windowMode
     readonly property int targetWindowWidth: isIslandMode
         ? Theme.islandWidth
         : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
@@ -83,6 +84,7 @@ ApplicationWindow {
         windowEffects.cornerRadius = visualMode === "island" ? 0 : nativeCornerRadius
         windowEffects.systemBackdropType = 1
         windowEffects.darkModeEnabled = Theme.darkMode
+        windowEffects.windowMaskRadius = visualMode === "island" ? Theme.radiusIsland : 0
     }
 
     function positionIsland(force) {
@@ -438,9 +440,10 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 0
             radius: root.displayedCornerRadius
-        color: root.isIslandMode ? Theme.islandSurfaceBg : Theme.surfaceBg
-        border.color: root.isIslandMode ? Theme.islandSurfaceBorder : Theme.surfaceBorder
-        border.width: 1
+            antialiasing: true
+        color: root.shellMode === "island" ? Theme.islandSurfaceBg : Theme.surfaceBg
+        border.color: root.shellMode === "island" ? Theme.islandSurfaceBorder : Theme.surfaceBorder
+        border.width: root.shellMode === "island" ? 0 : 1
         clip: true
 
         Rectangle {
@@ -449,15 +452,15 @@ ApplicationWindow {
             gradient: Gradient {
                 GradientStop {
                     position: 0.0
-                    color: root.isIslandMode ? Theme.islandSurfaceHighlight : Theme.surfaceHighlight
+                    color: root.shellMode === "island" ? Theme.islandSurfaceHighlight : Theme.surfaceHighlight
                 }
                 GradientStop {
                     position: 0.45
-                    color: root.isIslandMode ? Theme.islandSurfaceMidHighlight : Theme.surfaceMidHighlight
+                    color: root.shellMode === "island" ? Theme.islandSurfaceMidHighlight : Theme.surfaceMidHighlight
                 }
                 GradientStop {
                     position: 1.0
-                    color: root.isIslandMode ? Theme.islandSurfaceBottomTint : Theme.surfaceBottomTint
+                    color: root.shellMode === "island" ? Theme.islandSurfaceBottomTint : Theme.surfaceBottomTint
                 }
             }
         }

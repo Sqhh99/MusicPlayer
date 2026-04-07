@@ -101,6 +101,36 @@ bool applyImmersiveDarkMode(HWND hwnd, bool enabled)
     return SUCCEEDED(hr);
 }
 
+void applyWindowMask(HWND hwnd, int radius)
+{
+    if (!hwnd) {
+        return;
+    }
+
+    RECT clientRect = {};
+    if (!GetClientRect(hwnd, &clientRect)) {
+        return;
+    }
+
+    const int width = clientRect.right - clientRect.left;
+    const int height = clientRect.bottom - clientRect.top;
+
+    if (radius <= 0 || width <= 0 || height <= 0) {
+        SetWindowRgn(hwnd, nullptr, TRUE);
+        return;
+    }
+
+    const int diameter = radius * 2;
+    HRGN region = CreateRoundRectRgn(0, 0, width + 1, height + 1, diameter, diameter);
+    if (!region) {
+        return;
+    }
+
+    if (SetWindowRgn(hwnd, region, TRUE) == 0) {
+        DeleteObject(region);
+    }
+}
+
 #endif
 
 } // namespace
@@ -159,6 +189,11 @@ bool WindowEffectsController::darkModeEnabled() const
     return m_darkModeEnabled;
 }
 
+int WindowEffectsController::windowMaskRadius() const
+{
+    return m_windowMaskRadius;
+}
+
 void WindowEffectsController::setCornerRadius(int radius)
 {
     radius = qMax(0, radius);
@@ -191,6 +226,18 @@ void WindowEffectsController::setDarkModeEnabled(bool enabled)
 
     m_darkModeEnabled = enabled;
     emit darkModeEnabledChanged();
+    scheduleApply();
+}
+
+void WindowEffectsController::setWindowMaskRadius(int radius)
+{
+    radius = qMax(0, radius);
+    if (m_windowMaskRadius == radius) {
+        return;
+    }
+
+    m_windowMaskRadius = radius;
+    emit windowMaskRadiusChanged();
     scheduleApply();
 }
 
@@ -245,6 +292,7 @@ void WindowEffectsController::applyEffects()
     const bool cornerApplied = applyWindowCornerPreference(hwnd, m_cornerRadius);
     const bool backdropApplied = applySystemBackdropType(hwnd, m_systemBackdropType);
     applyImmersiveDarkMode(hwnd, m_darkModeEnabled);
+    applyWindowMask(hwnd, m_windowMaskRadius);
     setAcrylicEnabled(backdropApplied && m_systemBackdropType == DWMSBT_TRANSIENTWINDOW);
     if (!cornerApplied && !backdropApplied) {
         setAcrylicEnabled(false);

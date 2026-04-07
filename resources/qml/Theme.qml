@@ -71,17 +71,17 @@ QtObject {
         ? rgba(12, 12, 14, 0.80 + (0.12 * materialAmount))
         : rgba(248, 248, 249, 0.88 + (0.08 * materialAmount))
     readonly property color islandSurfaceBorder: darkMode
-        ? rgba(255, 255, 255, 0.10 + (0.08 * materialAmount))
-        : rgba(255, 255, 255, 0.52 + (0.18 * materialAmount))
+        ? rgba(255, 255, 255, 0.00)
+        : rgba(255, 255, 255, 0.00)
     readonly property color islandSurfaceHighlight: darkMode
-        ? rgba(255, 255, 255, 0.05 + (0.04 * materialAmount))
-        : rgba(255, 255, 255, 0.34 + (0.12 * materialAmount))
+        ? rgba(255, 255, 255, 0.025 + (0.02 * materialAmount))
+        : rgba(255, 255, 255, 0.18 + (0.08 * materialAmount))
     readonly property color islandSurfaceMidHighlight: darkMode
-        ? rgba(255, 255, 255, 0.03 + (0.03 * materialAmount))
-        : rgba(255, 255, 255, 0.13 + (0.05 * materialAmount))
+        ? rgba(255, 255, 255, 0.015 + (0.015 * materialAmount))
+        : rgba(255, 255, 255, 0.07 + (0.03 * materialAmount))
     readonly property color islandSurfaceBottomTint: darkMode
-        ? rgba(255, 255, 255, 0.02 + (0.02 * materialAmount))
-        : rgba(203, 213, 225, 0.05 + (0.05 * materialAmount))
+        ? rgba(255, 255, 255, 0.01 + (0.01 * materialAmount))
+        : rgba(203, 213, 225, 0.03 + (0.03 * materialAmount))
     readonly property color islandWaveColor: "#2ef2c5"
     readonly property color islandWaveGlowColor: darkMode
         ? rgba(46, 242, 197, 0.42)
@@ -169,7 +169,7 @@ QtObject {
     readonly property int miniWidth: 558
     readonly property int miniHeight: 180
     readonly property int islandWidth: 160
-    readonly property int islandHeight: 44
+    readonly property int islandHeight: 46
     readonly property int minWidth: 980
     readonly property int minHeight: 712
 

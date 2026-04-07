@@ -14,6 +14,7 @@ class WindowEffectsController : public QObject
     Q_PROPERTY(int cornerRadius READ cornerRadius WRITE setCornerRadius NOTIFY cornerRadiusChanged)
     Q_PROPERTY(int systemBackdropType READ systemBackdropType WRITE setSystemBackdropType NOTIFY systemBackdropTypeChanged)
     Q_PROPERTY(bool darkModeEnabled READ darkModeEnabled WRITE setDarkModeEnabled NOTIFY darkModeEnabledChanged)
+    Q_PROPERTY(int windowMaskRadius READ windowMaskRadius WRITE setWindowMaskRadius NOTIFY windowMaskRadiusChanged)
 
 public:
     explicit WindowEffectsController(QObject *parent = nullptr);
@@ -26,12 +27,15 @@ public:
     void setSystemBackdropType(int type);
     bool darkModeEnabled() const;
     void setDarkModeEnabled(bool enabled);
+    int windowMaskRadius() const;
+    void setWindowMaskRadius(int radius);
 
 signals:
     void acrylicEnabledChanged();
     void cornerRadiusChanged();
     void systemBackdropTypeChanged();
     void darkModeEnabledChanged();
+    void windowMaskRadiusChanged();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -47,6 +51,7 @@ private:
     int m_cornerRadius = 32;
     int m_systemBackdropType = 1;
     bool m_darkModeEnabled = false;
+    int m_windowMaskRadius = 0;
 };
 
 #endif // WINDOWEFFECTSCONTROLLER_H
