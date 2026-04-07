@@ -30,7 +30,7 @@ ApplicationWindow {
     property bool showLyrics: false
     property bool showEq: false
     property bool showSettings: false
-    property bool isShuffle: false
+    readonly property bool isShuffle: playerController ? playerController.isShuffle : false
     property bool compact: width < 900
     property bool transitioning: false
     property string outgoingMode: ""
@@ -174,9 +174,8 @@ ApplicationWindow {
     }
 
     function setShuffleEnabled(enabled) {
-        root.isShuffle = enabled
-        if (enabled && playerController.isLooping) {
-            playerController.isLooping = false
+        if (playerController) {
+            playerController.isShuffle = enabled
         }
     }
 
@@ -274,15 +273,6 @@ ApplicationWindow {
         if (showSettings) {
             showPlaylist = false
             showEq = false
-        }
-    }
-
-    Connections {
-        target: playerController
-        function onLoopingChanged() {
-            if (playerController.isLooping && root.isShuffle) {
-                root.isShuffle = false
-            }
         }
     }
 
