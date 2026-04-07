@@ -42,7 +42,8 @@ void applyWindowCornerPreference(HWND hwnd, int radius)
     }
 
     const DwmWindowCornerPreference preference =
-        radius <= 8 ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND;
+        radius <= 0 ? DWMWCP_DONOTROUND
+                    : (radius <= 4 ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND);
     dwmSetWindowAttribute(hwnd,
                           DWMWA_WINDOW_CORNER_PREFERENCE,
                           &preference,

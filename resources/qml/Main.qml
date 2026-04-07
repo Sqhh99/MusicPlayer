@@ -11,10 +11,10 @@ ApplicationWindow {
     visible: true
     width: targetWindowWidth
     height: targetWindowHeight
-    minimumWidth: targetWindowWidth
-    minimumHeight: targetWindowHeight
-    maximumWidth: targetWindowWidth
-    maximumHeight: targetWindowHeight
+    minimumWidth: transitioning ? Theme.islandWidth : targetWindowWidth
+    minimumHeight: transitioning ? Theme.islandHeight : targetWindowHeight
+    maximumWidth: transitioning ? Theme.fullWidth : targetWindowWidth
+    maximumHeight: transitioning ? Theme.fullHeight : targetWindowHeight
 
     flags: isPinned ? (Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint) 
                     : (Qt.Window | Qt.FramelessWindowHint)
@@ -32,6 +32,7 @@ ApplicationWindow {
     property bool showSettings: false
     property bool isShuffle: false
     property bool compact: width < 900
+    property bool transitioning: false
     readonly property int targetWindowWidth: isIslandMode
         ? Theme.islandWidth
         : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
@@ -41,6 +42,7 @@ ApplicationWindow {
     readonly property int targetCornerRadius: isIslandMode
         ? Theme.radiusIsland
         : (isMiniMode ? Theme.radiusMini : Theme.radiusLarge)
+    readonly property int nativeCornerRadius: targetCornerRadius
 
     Component.onCompleted: {
         syncWindowChrome()
@@ -71,7 +73,7 @@ ApplicationWindow {
     }
 
     function syncWindowChrome() {
-        windowEffects.cornerRadius = targetCornerRadius
+        windowEffects.cornerRadius = nativeCornerRadius
     }
 
     function positionIsland(force) {
@@ -104,14 +106,14 @@ ApplicationWindow {
     }
 
     function enterFullMode() {
-        if (root.windowMode === "full") {
+        if (root.windowMode === "full" || root.transitioning) {
             return
         }
-        root.windowMode = "full"
+        modeTransition.switchTo("full")
     }
 
     function enterMiniMode() {
-        if (root.windowMode === "mini") {
+        if (root.windowMode === "mini" || root.transitioning) {
             return
         }
         if (root.windowMode === "full") {
@@ -119,11 +121,11 @@ ApplicationWindow {
         }
         closeTransientPanels()
         root.showLyrics = false
-        root.windowMode = "mini"
+        modeTransition.switchTo("mini")
     }
 
     function enterIslandMode() {
-        if (root.windowMode === "island") {
+        if (root.windowMode === "island" || root.transitioning) {
             return
         }
         if (root.windowMode === "full") {
@@ -132,8 +134,7 @@ ApplicationWindow {
         closeTransientPanels()
         root.showLyrics = false
         root.isPinned = true
-        positionIsland(true)
-        root.windowMode = "island"
+        modeTransition.switchTo("island")
     }
 
     function toggleMiniMode() {
@@ -198,18 +199,155 @@ ApplicationWindow {
         }
     }
 
-    Behavior on width {
-        NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
+    // ── Mode Transition Animation Engine ──
+    QtObject {
+        id: modeTransition
+        property string pendingMode: ""
+
+        function switchTo(mode) {
+            pendingMode = mode
+            transitionAnimation.stop()
+            transitionAnimation.start()
+        }
+
+        function targetW() {
+            switch (pendingMode) {
+            case "island": return Theme.islandWidth
+            case "mini":   return Theme.miniWidth
+            default:       return Theme.fullWidth
+            }
+        }
+
+        function targetH() {
+            switch (pendingMode) {
+            case "island": return Theme.islandHeight
+            case "mini":   return Theme.miniHeight
+            default:       return Theme.fullHeight
+            }
+        }
+
+        function targetR() {
+            switch (pendingMode) {
+            case "island": return Theme.radiusIsland
+            case "mini":   return Theme.radiusMini
+            default:       return Theme.radiusLarge
+            }
+        }
+
+        function targetX() {
+            if (pendingMode === "island") {
+                var screenX = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+                var screenWidth = Number.isFinite(Screen.width) && Screen.width > 0
+                    ? Screen.width : Theme.islandWidth
+                return screenX + Math.round((screenWidth - Theme.islandWidth) / 2)
+            }
+            // For other modes, keep current x (or center on screen if coming from island)
+            if (root.isIslandMode) {
+                var sw = Number.isFinite(Screen.width) && Screen.width > 0 ? Screen.width : targetW()
+                var sx = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+                return sx + Math.round((sw - targetW()) / 2)
+            }
+            return root.x
+        }
+
+        function targetY() {
+            if (pendingMode === "island") {
+                return Theme.islandTopMargin
+            }
+            if (root.isIslandMode) {
+                var sh = Number.isFinite(Screen.height) && Screen.height > 0 ? Screen.height : targetH()
+                return Math.round((sh - targetH()) / 2)
+            }
+            return root.y
+        }
     }
-    Behavior on height {
-        NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
+
+    SequentialAnimation {
+        id: transitionAnimation
+
+        ScriptAction {
+            script: {
+                root.transitioning = true
+            }
+        }
+
+        // Phase 1: Fade out current content
+        NumberAnimation {
+            target: contentArea
+            property: "opacity"
+            to: 0
+            duration: 120
+            easing.type: Easing.OutQuad
+        }
+
+        // Phase 2: Resize & reposition window, animate corner radius
+        ParallelAnimation {
+            NumberAnimation {
+                target: root
+                property: "width"
+                to: modeTransition.targetW()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "height"
+                to: modeTransition.targetH()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "x"
+                to: modeTransition.targetX()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "y"
+                to: modeTransition.targetY()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: surface
+                property: "radius"
+                to: modeTransition.targetR()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+        }
+
+        // Phase 3: Apply new mode, then fade in
+        ScriptAction {
+            script: {
+                root.windowMode = modeTransition.pendingMode
+                syncWindowChrome()
+            }
+        }
+
+        NumberAnimation {
+            target: contentArea
+            property: "opacity"
+            to: 1
+            duration: 160
+            easing.type: Easing.InQuad
+        }
+
+        ScriptAction {
+            script: {
+                root.transitioning = false
+            }
+        }
     }
+
     Behavior on x {
-        enabled: !dragArea.isDragging
+        enabled: !dragArea.isDragging && !root.transitioning
         NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
     }
     Behavior on y {
-        enabled: !dragArea.isDragging
+        enabled: !dragArea.isDragging && !root.transitioning
         NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
     }
 
@@ -241,10 +379,10 @@ ApplicationWindow {
         id: surface
         anchors.fill: parent
         anchors.margins: 0
-        radius: targetCornerRadius
+        radius: root.transitioning ? surface.radius : targetCornerRadius
         color: root.isIslandMode ? Theme.islandBg : Theme.surfaceBg
         border.color: root.isIslandMode ? Theme.islandBorder : Theme.surfaceBorder
-        border.width: 1
+        border.width: root.isIslandMode ? 0 : 1
         clip: true
 
         Rectangle {

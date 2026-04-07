@@ -108,7 +108,7 @@ Item {
 
             Timer {
                 id: pulseTimer
-                interval: 120
+                interval: 160
                 repeat: true
                 running: root.playing
                 onTriggered: root.advanceWave()
@@ -122,33 +122,40 @@ Item {
                     id: barsRepeater
                     model: Theme.islandWaveBarCount
 
-                    Rectangle {
-                        id: bar
+                    Item {
+                        id: barContainer
                         width: Theme.islandWaveBarWidth
-                        height: root.heightForIndex(index)
-                        radius: height / 2
-                        color: Theme.islandWaveColor
-                        antialiasing: true
-                        layer.enabled: true
-                        layer.smooth: true
-
-                        property real targetHeight: height
+                        height: Theme.islandWaveBubbleHeight
+                        property real targetHeight: root.heightForIndex(index)
 
                         onTargetHeightChanged: {
-                            height = targetHeight
-                        }
-
-                        Behavior on height {
-                            NumberAnimation { duration: 140; easing.type: Easing.InOutQuad }
+                            bar.height = targetHeight
                         }
 
                         Rectangle {
-                            anchors.fill: parent
-                            radius: parent.radius
-                            color: Theme.islandWaveGlowColor
-                            scale: 1.45
-                            opacity: root.playing ? 0.9 : 0.35
-                            z: -1
+                            id: bar
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: Theme.islandWaveBarWidth
+                            height: barContainer.targetHeight
+                            radius: height / 2
+                            color: Theme.islandWaveColor
+                            antialiasing: true
+                            layer.enabled: true
+                            layer.smooth: true
+
+                            Behavior on height {
+                                NumberAnimation { duration: 180; easing.type: Easing.InOutQuad }
+                            }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                color: Theme.islandWaveGlowColor
+                                scale: 1.45
+                                opacity: root.playing ? 0.9 : 0.35
+                                z: -1
+                            }
                         }
                     }
                 }
