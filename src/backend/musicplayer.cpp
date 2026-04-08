@@ -2,8 +2,18 @@
 #include <QFileInfo>
 #include <QMediaPlayer>
 #include <QDebug>
+#include <QRandomGenerator>
 
-MusicPlayer::MusicPlayer(QObject *parent) : QObject(parent), currentMediaIndex(0), loop(false), currentEqPreset(Flat), bassLevel(50), midLevel(50), trebleLevel(50)
+MusicPlayer::MusicPlayer(QObject *parent)
+    : QObject(parent)
+    , currentMediaIndex(0)
+    , loop(false)
+    , shuffle(false)
+    , currentEqPreset(Flat)
+    , bassLevel(50)
+    , midLevel(50)
+    , trebleLevel(50)
+    , shuffleHistoryPosition(-1)
 {
     player = new QMediaPlayer(this);
     audioOutput = new QAudioOutput(this); // 创建音频输出对象
@@ -36,12 +46,18 @@ MusicPlayer::~MusicPlayer()
 void MusicPlayer::setPlaylist(const QStringList &files)
 {
     mediaList.clear();
+    shuffleHistory.clear();
+    shuffleHistoryPosition = -1;
     for (const QString &file : files) {
         mediaList.append(QUrl::fromLocalFile(file));
     }
 
     if (!mediaList.isEmpty()) {
+        currentMediaIndex = 0;
         player->setSource(mediaList.at(0)); // 设置当前播放文件
+        if (shuffle) {
+            recordShuffleIndex(currentMediaIndex);
+        }
     }
 }
 
@@ -57,6 +73,9 @@ void MusicPlayer::play(int index)
 {
     if (index >= 0 && index < mediaList.size()) {
         currentMediaIndex = index;
+        if (shuffle) {
+            recordShuffleIndex(index);
+        }
         player->setSource(mediaList.at(currentMediaIndex));
         this->play();
     }
@@ -101,6 +120,22 @@ bool MusicPlayer::getLoop() const
     return loop;
 }
 
+void MusicPlayer::setShuffle(bool enabled)
+{
+    shuffle = enabled;
+    shuffleHistory.clear();
+    shuffleHistoryPosition = -1;
+
+    if (shuffle && currentMediaIndex >= 0 && currentMediaIndex < mediaList.size()) {
+        recordShuffleIndex(currentMediaIndex);
+    }
+}
+
+bool MusicPlayer::getShuffle() const
+{
+    return shuffle;
+}
+
 bool MusicPlayer::isPlaying() const
 {
     return player && player->playbackState() == QMediaPlayer::PlayingState;
@@ -123,11 +158,9 @@ void MusicPlayer::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
         if (loop) {
             player->setPosition(0);
             player->play();
+            emit musicStart(currentIndex());
         } else {
-            currentMediaIndex = (currentMediaIndex + 1) % mediaList.size();
-            player->setSource(mediaList.at(currentMediaIndex));
-            // Use this->play() to emit musicStart signal for proper song info update
-            this->play();
+            next();
         }
         emit musicCompletion(currentMediaIndex);
     }
@@ -141,6 +174,24 @@ void MusicPlayer::onPlaybackStateChanged(QMediaPlayer::PlaybackState state)
 void MusicPlayer::previous()
 {
     if (mediaList.isEmpty()) return;
+    if (shuffle) {
+        if (shuffleHistoryPosition > 0) {
+            shuffleHistoryPosition--;
+            currentMediaIndex = shuffleHistory.at(shuffleHistoryPosition);
+            player->setSource(mediaList.at(currentMediaIndex));
+            this->play();
+            return;
+        }
+
+        player->setPosition(0);
+        if (!isPlaying()) {
+            this->play();
+        } else {
+            emit musicStart(currentIndex());
+        }
+        return;
+    }
+
     currentMediaIndex = (currentMediaIndex - 1 + mediaList.size()) % mediaList.size();
     player->setSource(mediaList.at(currentMediaIndex));
     this->play();
@@ -149,6 +200,19 @@ void MusicPlayer::previous()
 void MusicPlayer::next()
 {
     if (mediaList.isEmpty()) return;
+    if (shuffle) {
+        if (shuffleHistoryPosition >= 0 && shuffleHistoryPosition < shuffleHistory.size() - 1) {
+            shuffleHistoryPosition++;
+            currentMediaIndex = shuffleHistory.at(shuffleHistoryPosition);
+        } else {
+            currentMediaIndex = randomPlayableIndex();
+            recordShuffleIndex(currentMediaIndex);
+        }
+        player->setSource(mediaList.at(currentMediaIndex));
+        this->play();
+        return;
+    }
+
     currentMediaIndex = (currentMediaIndex + 1) % mediaList.size();
     player->setSource(mediaList.at(currentMediaIndex));
     this->play();
@@ -168,6 +232,8 @@ void MusicPlayer::clearPlaylist()
     player->stop();
     mediaList.clear();
     currentMediaIndex = 0;
+    shuffleHistory.clear();
+    shuffleHistoryPosition = -1;
     emit playlistChanged();
 }
 
@@ -191,16 +257,28 @@ bool MusicPlayer::removeFromPlaylist(int index)
             
             if (!mediaList.isEmpty()) {
                 currentMediaIndex = currentMediaIndex % mediaList.size();
+                if (shuffle) {
+                    recordShuffleIndex(currentMediaIndex);
+                }
                 player->setSource(mediaList.at(currentMediaIndex));
                 player->play();
             } else {
                 currentMediaIndex = 0;
+                shuffleHistory.clear();
+                shuffleHistoryPosition = -1;
             }
-        } 
+        }
         else {
             mediaList.removeAt(index);
             if (index < currentMediaIndex) {
                 currentMediaIndex--;
+            }
+            if (shuffle) {
+                shuffleHistory.clear();
+                shuffleHistoryPosition = -1;
+                if (!mediaList.isEmpty()) {
+                    recordShuffleIndex(currentMediaIndex);
+                }
             }
         }
         emit playlistChanged();
@@ -341,7 +419,40 @@ void MusicPlayer::applyEqualizer()
     // 在实际项目中，您可能需要使用第三方库来实现真正的均衡器功能
     
     qDebug() << "应用均衡器设置: 低音=" << bassLevel << " 中音=" << midLevel << " 高音=" << trebleLevel;
-    
+
     // 注意：实际的均衡器实现需要使用更高级的音频API
     // 可能需要Qt Multimedia Effects模块或第三方库
+}
+
+int MusicPlayer::randomPlayableIndex() const
+{
+    if (mediaList.size() <= 1) {
+        return currentMediaIndex;
+    }
+
+    int randomIndex = currentMediaIndex;
+    while (randomIndex == currentMediaIndex) {
+        randomIndex = QRandomGenerator::global()->bounded(mediaList.size());
+    }
+    return randomIndex;
+}
+
+void MusicPlayer::recordShuffleIndex(int index)
+{
+    if (!shuffle || index < 0 || index >= mediaList.size()) {
+        return;
+    }
+
+    if (shuffleHistoryPosition >= 0
+        && shuffleHistoryPosition < shuffleHistory.size()
+        && shuffleHistory.at(shuffleHistoryPosition) == index) {
+        return;
+    }
+
+    while (shuffleHistory.size() - 1 > shuffleHistoryPosition) {
+        shuffleHistory.removeLast();
+    }
+
+    shuffleHistory.append(index);
+    shuffleHistoryPosition = shuffleHistory.size() - 1;
 }

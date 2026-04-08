@@ -8,16 +8,16 @@ Item {
     property int size: Theme.controlSize
     property int iconSize: Theme.iconSize
     property color backgroundColor: "transparent"
-    property color hoverColor: "transparent"  // No hover background by default
-    property color pressedColor: "#00000012"
-    property color iconColor: Theme.textMuted
-    property color activeColor: Theme.accent
+    property color hoverColor: "transparent"
+    property color pressedColor: Theme.materialButtonPressedBg
+    property color iconColor: Theme.buttonIconColor
+    property color activeColor: Theme.buttonIconActiveColor
     property bool active: false
     property bool showBorder: false
-    property color borderColor: Theme.cardBorder
-    property color activeBackgroundColor: Theme.accentSoft
-    property real iconOpacity: 0.65
-    property real activeOpacity: 0.95
+    property color borderColor: Theme.materialButtonBorder
+    property color activeBackgroundColor: Theme.materialButtonActiveBg
+    property real iconOpacity: Theme.buttonIconOpacity
+    property real activeOpacity: Theme.buttonIconStrongOpacity
     property int radius: Math.max(8, Math.round(size * 0.25))
     property bool hovered: mouseArea.containsMouse
 
@@ -32,10 +32,10 @@ Item {
         id: bg
         anchors.fill: parent
         radius: root.radius
-        // Simplified: only show background when active or pressed, no hover background flash
         color: root.active
             ? root.activeBackgroundColor
-            : (mouseArea.pressed ? root.pressedColor : root.backgroundColor)
+            : (mouseArea.pressed ? root.pressedColor
+                                 : (mouseArea.containsMouse ? root.hoverColor : root.backgroundColor))
         border.color: root.showBorder ? root.borderColor : "transparent"
         border.width: root.showBorder ? 1 : 0
         
@@ -47,14 +47,13 @@ Item {
         }
     }
 
-    Image {
+    TintedIcon {
         id: icon
         anchors.centerIn: parent
         source: root.iconSource
         width: root.iconSize
         height: root.iconSize
-        fillMode: Image.PreserveAspectFit
-        smooth: true
+        tintColor: root.active ? root.activeColor : root.iconColor
         // Hover feedback via opacity change only
         opacity: root.active ? root.activeOpacity : (mouseArea.containsMouse ? Math.min(root.iconOpacity + 0.3, 1.0) : root.iconOpacity)
         scale: mouseArea.pressed ? 0.9 : 1.0

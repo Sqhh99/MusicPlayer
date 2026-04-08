@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
 # Find Qt packages
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2 Multimedia)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick QuickControls2 Multimedia Core5Compat)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -27,6 +27,10 @@ set(APP_SOURCES
     src/app/PlayerController.h
     src/app/PlaylistModel.cpp
     src/app/PlaylistModel.h
+    src/app/AppSettingsController.cpp
+    src/app/AppSettingsController.h
+    src/platform/WindowEffectsController.cpp
+    src/platform/WindowEffectsController.h
 )
 
 # Windows icon resource
@@ -53,6 +57,8 @@ qt_add_qml_module(MusicPlayer
         resources/qml/Main.qml
         resources/qml/Theme.qml
         resources/qml/components/IconButton.qml
+        resources/qml/components/TintedIcon.qml
+        resources/qml/components/OverlayCloseButton.qml
         resources/qml/components/ProgressBar.qml
         resources/qml/components/AlbumArt.qml
         resources/qml/components/EqualizerBars.qml
@@ -63,11 +69,19 @@ qt_add_qml_module(MusicPlayer
         resources/qml/components/EqualizerPanel.qml
         resources/qml/components/MiniPlayer.qml
         resources/qml/components/FullPlayer.qml
+        resources/qml/components/DynamicIsland.qml
+        resources/qml/components/WindowDragArea.qml
+        resources/qml/components/AppShortcuts.qml
+        resources/qml/components/TrayIcon.qml
+        resources/qml/components/OpenFilesDialog.qml
+        resources/qml/components/SettingsOverlay.qml
     RESOURCES
         resources/icons/listen1.ico
         resources/icons/chevron-down.png
         resources/icons/list-music.png
-        resources/icons/maximize-2.png
+        resources/icons/picture-in-picture.png
+        resources/icons/picture-in-picture-2.png
+        resources/icons/pill.png
         resources/icons/mic-vocal.png
         resources/icons/minus.png
         resources/icons/pause.png
@@ -82,6 +96,8 @@ qt_add_qml_module(MusicPlayer
         resources/icons/x.png
         resources/icons/pin.png
         resources/icons/folder.png
+        resources/icons/settings.png
+        resources/icons/monitor.png
 )
 
 # Link libraries
@@ -89,6 +105,7 @@ target_link_libraries(MusicPlayer PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Multimedia
+    Qt6::Core5Compat
 )
 
 # Include directories
@@ -98,7 +115,7 @@ target_include_directories(MusicPlayer PRIVATE
 
 # Set target properties
 set_target_properties(MusicPlayer PROPERTIES
-    WIN32_EXECUTABLE TRUE
+  WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER com.musicplayer.app
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
