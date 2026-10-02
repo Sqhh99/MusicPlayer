@@ -130,8 +130,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "mic-vocal.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         active: root.showLyrics
                                         onClicked: root.toggleLyrics()
                                     }
@@ -140,8 +140,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "sliders-vertical.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         active: root.showEq
                                         onClicked: root.toggleEq()
                                     }
@@ -156,8 +156,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "shuffle.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         activeBackgroundColor: Theme.accentSoft
                                         active: root.isShuffle
                                         onClicked: root.toggleShuffle()
@@ -167,8 +167,8 @@ Item {
                                         size: 34
                                         iconSize: 16
                                         iconSource: Theme.iconPath + "repeat.png"
-                                        iconOpacity: 0.55
-                                        activeOpacity: 0.9
+                                        iconOpacity: Theme.buttonIconMutedOpacity
+                                        activeOpacity: Theme.buttonIconStrongOpacity
                                         activeBackgroundColor: Theme.accentSoft
                                         active: root.controller ? root.controller.isLooping : false
                                         onClicked: {
@@ -228,27 +228,25 @@ Item {
                                 IconButton {
                                     size: Theme.controlSizeMd
                                     iconSize: 24
-                                    iconOpacity: 0.7
+                                    iconOpacity: Theme.buttonIconSoftOpacity
                                     iconSource: Theme.iconPath + "skip-back.png"
                                     onClicked: root.controller ? root.controller.previous() : undefined
                                 }
 
                                 IconButton {
-                                    size: Theme.controlSizeXl
-                                    iconSize: 28
-                                    iconOpacity: 0.9
+                                    size: Theme.controlSizeMd
+                                    iconSize: 24
+                                    iconOpacity: Theme.buttonIconStrongOpacity
                                     iconSource: root.controller && root.controller.isPlaying
                                         ? Theme.iconPath + "pause.png"
                                         : Theme.iconPath + "play.png"
-                                    backgroundColor: "#ffffff"
-                                    showBorder: true
                                     onClicked: root.controller ? root.controller.togglePlayPause() : undefined
                                 }
 
                                 IconButton {
                                     size: Theme.controlSizeMd
                                     iconSize: 24
-                                    iconOpacity: 0.7
+                                    iconOpacity: Theme.buttonIconSoftOpacity
                                     iconSource: Theme.iconPath + "skip-forward.png"
                                     onClicked: root.controller ? root.controller.next() : undefined
                                 }
@@ -268,9 +266,14 @@ Item {
                         id: playlistButton
                         height: 36
                         radius: 12
-                        color: root.showPlaylist ? Theme.accentSoft : "#ffffff"
-                        border.color: "transparent"
-                        border.width: 0
+                        property bool hovered: playlistButtonArea.containsMouse
+                        color: root.showPlaylist
+                            ? Theme.materialButtonActiveBg
+                            : (playlistButtonArea.pressed
+                                ? Theme.materialButtonPressedBg
+                                : (hovered ? Theme.materialButtonHoverBg : Theme.materialButtonBg))
+                        border.color: Theme.materialButtonBorder
+                        border.width: 1
                         implicitWidth: playlistRow.implicitWidth + 20
                         Layout.alignment: Qt.AlignVCenter
 
@@ -279,13 +282,12 @@ Item {
                             spacing: 8
                             anchors.centerIn: parent
 
-                            Image {
+                            TintedIcon {
                                 source: Theme.iconPath + "list-music.png"
                                 width: 16
                                 height: 16
-                                opacity: 0.65
-                                fillMode: Image.PreserveAspectFit
-                                smooth: true
+                                tintColor: Theme.buttonIconColor
+                                opacity: 0.78
                             }
 
                             Text {
@@ -298,7 +300,9 @@ Item {
                         }
 
                         MouseArea {
+                            id: playlistButtonArea
                             anchors.fill: parent
+                            hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.togglePlaylist()
                         }
@@ -345,22 +349,4 @@ Item {
         }
     }
 
-    PlaylistOverlay {
-        anchors.fill: parent
-        open: root.showPlaylist
-        model: root.controller ? root.controller.playlist : null
-        currentIndex: root.controller ? root.controller.currentIndex : -1
-        isPlaying: root.controller ? root.controller.isPlaying : false
-        appWindow: root.appWindow
-        onCloseRequested: root.togglePlaylist()
-        onOpenFilesRequested: root.openFilesRequested()
-        onSelectIndex: (index) => {
-            if (root.controller) {
-                root.controller.playIndex(index)
-            }
-            if (root.compact) {
-                root.togglePlaylist()
-            }
-        }
-    }
 }

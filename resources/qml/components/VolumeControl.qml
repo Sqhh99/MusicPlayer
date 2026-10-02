@@ -23,7 +23,7 @@ Item {
             iconSource: root.muted || root.volume === 0
                 ? Theme.iconPath + "volume-x.png"
                 : Theme.iconPath + "volume-2.png"
-            iconOpacity: 0.6
+            iconOpacity: Theme.buttonIconSoftOpacity
             hoverColor: Theme.hoverBg
             Layout.alignment: Qt.AlignVCenter
             onClicked: root.muteToggled()

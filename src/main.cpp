@@ -8,8 +8,10 @@
 #include <QDebug>
 #include <QQuickWindow>
 
+#include "app/AppSettingsController.h"
 #include "app/PlayerController.h"
 #include "app/PlaylistModel.h"
+#include "platform/WindowEffectsController.h"
 
 // Single instance server name
 #define SERVER_NAME "MusicPlayerQMLSingleInstance"
@@ -52,11 +54,15 @@ int main(int argc, char *argv[])
     
     // Create controller singleton
     PlayerController *controller = new PlayerController(&app);
+    AppSettingsController *appSettings = new AppSettingsController(&app);
+    WindowEffectsController *windowEffects = new WindowEffectsController(&app);
     
     QQmlApplicationEngine engine;
     
     // Register the playerController as a context property (lowercase for QML)
     engine.rootContext()->setContextProperty("playerController", controller);
+    engine.rootContext()->setContextProperty("appSettings", appSettings);
+    engine.rootContext()->setContextProperty("windowEffects", windowEffects);
     
     // Connect to engine warnings for debugging
     QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError> &warnings) {
@@ -88,6 +94,8 @@ int main(int argc, char *argv[])
         qCritical() << "Failed to get main window";
         return -1;
     }
+
+    windowEffects->attachTo(mainWindow);
     
     // Handle single instance activation
     QObject::connect(server, &QLocalServer::newConnection, [server, mainWindow]() {

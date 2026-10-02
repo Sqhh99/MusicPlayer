@@ -60,6 +60,8 @@ public:
     // 播放模式控制
     void setLoop(bool loop);          // 设置循环播放
     bool getLoop() const;             // 获取循环播放状态
+    void setShuffle(bool shuffle);    // 设置随机播放
+    bool getShuffle() const;          // 获取随机播放状态
     
     // 均衡器控制
     void setEqualizerPreset(EqualizerPreset preset);  // 设置均衡器预设
@@ -96,13 +98,18 @@ private:
     QList<QUrl> mediaList;         // 播放列表
     int currentMediaIndex;         // 当前播放的文件索引
     bool loop;                     // 是否循环播放
+    bool shuffle;                  // 是否随机播放
     EqualizerPreset currentEqPreset; // 当前均衡器预设
     int bassLevel;                 // 低音级别 (0-100)
     int midLevel;                  // 中音级别 (0-100)
     int trebleLevel;               // 高音级别 (0-100)
-    
+    QList<int> shuffleHistory;     // 随机播放历史
+    int shuffleHistoryPosition;    // 随机播放历史位置
+
     void initConnections();        // 初始化内部连接
     void applyEqualizer();         // 应用均衡器设置
+    int randomPlayableIndex() const;
+    void recordShuffleIndex(int index);
 };
 
 #endif // MUSICPLAYER_H

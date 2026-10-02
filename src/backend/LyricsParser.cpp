@@ -1,8 +1,78 @@
 #include "LyricsParser.h"
 #include <QFile>
-#include <QTextStream>
+#include <QTextCodec>
 #include <QRegularExpression>
 #include <algorithm>
+#include <limits>
+
+namespace {
+
+QString decodeLyricsData(const QByteArray &data)
+{
+    if (data.isEmpty()) {
+        return QString();
+    }
+
+    const QList<QByteArray> codecNames = {
+        "UTF-8",
+        "UTF-16LE",
+        "UTF-16BE",
+        "Shift-JIS",
+        "CP932",
+        "GB18030"
+    };
+
+    static const QRegularExpression timeRegex(R"(\[(\d+):(\d+)(?:\.(\d+))?\])");
+
+    QString bestText;
+    int bestScore = std::numeric_limits<int>::min();
+
+    auto scoreDecodedText = [&](const QString &text) {
+        const int timestampHits = text.count(timeRegex);
+        const int replacementCount = text.count(QChar::ReplacementCharacter);
+        const int nullCount = text.count(QChar(u'\0'));
+
+        int mojibakePenalty = 0;
+        for (QChar ch : text) {
+            const ushort code = ch.unicode();
+            if (code == 0xFFFD) {
+                continue;
+            }
+            if ((code >= 0x80 && code <= 0x9F) || (code >= 0xE000 && code <= 0xF8FF)) {
+                mojibakePenalty += 1;
+            }
+        }
+
+        return (timestampHits * 100) - (replacementCount * 60) - (nullCount * 40) - (mojibakePenalty * 4);
+    };
+
+    for (const QByteArray &name : codecNames) {
+        QTextCodec *codec = QTextCodec::codecForName(name);
+        if (!codec) {
+            continue;
+        }
+
+        const QString decoded = codec->toUnicode(data);
+        const int score = scoreDecodedText(decoded);
+        if (score > bestScore) {
+            bestScore = score;
+            bestText = decoded;
+        }
+    }
+
+    if (QTextCodec *localeCodec = QTextCodec::codecForLocale()) {
+        const QString decoded = localeCodec->toUnicode(data);
+        const int score = scoreDecodedText(decoded);
+        if (score > bestScore) {
+            bestScore = score;
+            bestText = decoded;
+        }
+    }
+
+    return bestText;
+}
+
+}
 
 LyricsParser::LyricsParser(QObject *parent)
     : QObject(parent)
@@ -12,17 +82,17 @@ LyricsParser::LyricsParser(QObject *parent)
 bool LyricsParser::loadFromFile(const QString &path)
 {
     clear();
-    
+
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
-    
-    QTextStream stream(&file);
-    stream.setEncoding(QStringConverter::Utf8);
-    
-    while (!stream.atEnd()) {
-        QString line = stream.readLine().trimmed();
+
+    const QString content = decodeLyricsData(file.readAll());
+    const QStringList lines = content.split(QRegularExpression(R"(\r\n|\n|\r)"), Qt::SkipEmptyParts);
+
+    for (const QString &rawLine : lines) {
+        QString line = rawLine.trimmed();
         if (!line.isEmpty()) {
             parseLine(line);
         }

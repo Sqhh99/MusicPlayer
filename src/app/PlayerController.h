@@ -19,6 +19,7 @@ class PlayerController : public QObject
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY playingChanged)
     Q_PROPERTY(bool isPaused READ isPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool isLooping READ isLooping WRITE setLooping NOTIFY loopingChanged)
+    Q_PROPERTY(bool isShuffle READ isShuffle WRITE setShuffle NOTIFY shuffleChanged)
 
     // Volume properties
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
@@ -58,6 +59,8 @@ public:
     bool isPaused() const;
     bool isLooping() const;
     void setLooping(bool loop);
+    bool isShuffle() const;
+    void setShuffle(bool shuffle);
 
     // Volume getters/setters
     int volume() const;
@@ -114,6 +117,7 @@ signals:
     void playingChanged();
     void pausedChanged();
     void loopingChanged();
+    void shuffleChanged();
     void volumeChanged();
     void mutedChanged();
     void positionChanged();

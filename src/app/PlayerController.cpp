@@ -74,9 +74,33 @@ bool PlayerController::isLooping() const
 void PlayerController::setLooping(bool loop)
 {
     if (m_musicPlayer->getLoop() != loop) {
+        if (loop && m_musicPlayer->getShuffle()) {
+            m_musicPlayer->setShuffle(false);
+            emit shuffleChanged();
+        }
         m_musicPlayer->setLoop(loop);
         emit loopingChanged();
     }
+}
+
+bool PlayerController::isShuffle() const
+{
+    return m_musicPlayer->getShuffle();
+}
+
+void PlayerController::setShuffle(bool shuffle)
+{
+    if (m_musicPlayer->getShuffle() == shuffle) {
+        return;
+    }
+
+    if (shuffle && m_musicPlayer->getLoop()) {
+        m_musicPlayer->setLoop(false);
+        emit loopingChanged();
+    }
+
+    m_musicPlayer->setShuffle(shuffle);
+    emit shuffleChanged();
 }
 
 // Volume

@@ -1,9 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import QtQuick.Window
-import Qt.labs.platform as Platform
 import MusicPlayer
 import "components"
 
@@ -11,12 +9,12 @@ ApplicationWindow {
     id: root
 
     visible: true
-    width: isMiniMode ? Theme.miniWidth : Theme.fullWidth
-    height: isMiniMode ? Theme.miniHeight : Theme.fullHeight
-    minimumWidth: isMiniMode ? Theme.miniWidth : Theme.minWidth
-    minimumHeight: isMiniMode ? Theme.miniHeight : Theme.minHeight
-    maximumWidth: isMiniMode ? Theme.miniWidth : Theme.fullWidth
-    maximumHeight: isMiniMode ? Theme.miniHeight : Theme.fullHeight
+    width: targetWindowWidth
+    height: targetWindowHeight
+    minimumWidth: transitioning ? Theme.islandWidth : targetWindowWidth
+    minimumHeight: transitioning ? Theme.islandHeight : targetWindowHeight
+    maximumWidth: transitioning ? Theme.fullWidth : targetWindowWidth
+    maximumHeight: transitioning ? Theme.fullHeight : targetWindowHeight
 
     flags: isPinned ? (Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint) 
                     : (Qt.Window | Qt.FramelessWindowHint)
@@ -25,25 +23,37 @@ ApplicationWindow {
     font.family: Theme.fontFamily
 
     property bool isPinned: false
-
-    property bool isMiniMode: false
+    property string windowMode: "full"
+    readonly property bool isMiniMode: windowMode === "mini"
+    readonly property bool isIslandMode: windowMode === "island"
     property bool showPlaylist: false
     property bool showLyrics: false
     property bool showEq: false
-    property bool isShuffle: false
+    property bool showSettings: false
+    readonly property bool isShuffle: playerController ? playerController.isShuffle : false
     property bool compact: width < 900
+    property bool transitioning: false
+    property string outgoingMode: ""
+    property string incomingMode: ""
+    property real transitionProgress: 0
+    property bool pendingOpenSettings: false
+    property real displayedCornerRadius: targetCornerRadius
+    readonly property string shellMode: transitioning && incomingMode === "island" ? "island" : windowMode
+    readonly property int targetWindowWidth: isIslandMode
+        ? Theme.islandWidth
+        : (isMiniMode ? Theme.miniWidth : Theme.fullWidth)
+    readonly property int targetWindowHeight: isIslandMode
+        ? Theme.islandHeight
+        : (isMiniMode ? Theme.miniHeight : Theme.fullHeight)
+    readonly property int targetCornerRadius: isIslandMode
+        ? Theme.radiusIsland
+        : (isMiniMode ? Theme.radiusMini : Theme.radiusLarge)
+    readonly property int nativeCornerRadius: targetCornerRadius
 
-    property string trayTooltip: {
-        var text = "Music Player"
-        if (playerController.currentSong.length > 0) {
-            text = playerController.currentSong
-            if (playerController.isPlaying) {
-                text += " - 播放中"
-            } else if (playerController.isPaused) {
-                text += " - 已暂停"
-            }
-        }
-        return text
+    Component.onCompleted: {
+        displayedCornerRadius = targetCornerRadius
+        syncWindowChrome()
+        playerController.loadSavedPlaylist()
     }
 
     property var lyricsLines: [
@@ -69,10 +79,103 @@ ApplicationWindow {
         root.requestActivate()
     }
 
+    function syncWindowChrome(mode) {
+        var visualMode = mode !== undefined ? mode : root.windowMode
+        windowEffects.cornerRadius = visualMode === "island" ? 0 : nativeCornerRadius
+        windowEffects.systemBackdropType = 1
+        windowEffects.darkModeEnabled = Theme.darkMode
+        windowEffects.windowMaskRadius = visualMode === "island" ? Theme.radiusIsland : 0
+        windowEffects.applyNow()
+    }
+
+    function positionIsland(force) {
+        if (!force && !root.isIslandMode) {
+            return
+        }
+        var screenX = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+        var screenWidth = Number.isFinite(Screen.width) && Screen.width > 0
+            ? Screen.width
+            : Theme.islandWidth
+        root.x = screenX + Math.round((screenWidth - Theme.islandWidth) / 2)
+        root.y = Theme.islandTopMargin
+    }
+
+    function closeTransientPanels() {
+        root.showPlaylist = false
+        root.showEq = false
+        root.showSettings = false
+    }
+
+    function modeAllowsDisplay(mode) {
+        switch (mode) {
+        case "full":
+            return !root.showPlaylist && !root.showSettings
+        case "mini":
+            return !root.showSettings
+        case "island":
+            return !root.showSettings
+        default:
+            return false
+        }
+    }
+
+    function modeOpacity(mode) {
+        if (root.transitioning) {
+            if (root.outgoingMode === mode) {
+                if (!root.modeAllowsDisplay(mode)) {
+                    return 0
+                }
+                if (mode === "island" && root.incomingMode === "mini") {
+                    return root.transitionProgress < 0.62
+                        ? 1
+                        : Math.max(0, 1 - ((root.transitionProgress - 0.62) / 0.38))
+                }
+                return 1 - root.transitionProgress
+            }
+            if (root.incomingMode === mode) {
+                if (!root.modeAllowsDisplay(mode)) {
+                    return 0
+                }
+                if (mode === "mini" && root.outgoingMode === "island") {
+                    return root.transitionProgress < 0.58
+                        ? 0
+                        : Math.min(1, (root.transitionProgress - 0.58) / 0.42)
+                }
+                return root.transitionProgress
+            }
+            return 0
+        }
+
+        return root.windowMode === mode && root.modeAllowsDisplay(mode) ? 1 : 0
+    }
+
+    function modeScale(mode) {
+        if (!root.transitioning) {
+            return 1
+        }
+        if (root.outgoingMode === mode) {
+            if (mode === "island" && root.incomingMode === "mini") {
+                return root.transitionProgress < 0.62
+                    ? 1
+                    : 1 - (0.02 * ((root.transitionProgress - 0.62) / 0.38))
+            }
+            return 1 - (0.02 * root.transitionProgress)
+        }
+        if (root.incomingMode === mode) {
+            if (mode === "mini" && root.outgoingMode === "island") {
+                if (root.transitionProgress < 0.58) {
+                    return 0.98
+                }
+                return 0.98 + (0.02 * ((root.transitionProgress - 0.58) / 0.42))
+            }
+            return 0.98 + (0.02 * root.transitionProgress)
+        }
+        return 1
+    }
+
     function setShuffleEnabled(enabled) {
-        root.isShuffle = enabled
-        if (enabled && playerController.isLooping) {
-            playerController.isLooping = false
+        if (playerController) {
+            playerController.isShuffle = enabled
         }
     }
 
@@ -80,27 +183,82 @@ ApplicationWindow {
         setShuffleEnabled(!root.isShuffle)
     }
 
+    function enterFullMode() {
+        if (root.windowMode === "full" || root.transitioning) {
+            return
+        }
+        modeTransition.switchTo("full")
+    }
+
+    function enterMiniMode() {
+        if (root.windowMode === "mini" || root.transitioning) {
+            return
+        }
+        if (root.windowMode === "full") {
+            savedLyricsState = showLyrics
+        }
+        pendingOpenSettings = false
+        closeTransientPanels()
+        root.showLyrics = false
+        if (root.windowMode === "island") {
+            syncWindowChrome("mini")
+        }
+        modeTransition.switchTo("mini")
+    }
+
+    function enterIslandMode() {
+        if (root.windowMode === "island" || root.transitioning) {
+            return
+        }
+        if (root.windowMode === "full") {
+            savedLyricsState = showLyrics
+        }
+        pendingOpenSettings = false
+        closeTransientPanels()
+        root.showLyrics = false
+        root.isPinned = true
+        syncWindowChrome("island")
+        modeTransition.switchTo("island")
+    }
+
+    function toggleMiniMode() {
+        if (root.isMiniMode) {
+            root.enterFullMode()
+        } else {
+            root.enterMiniMode()
+        }
+    }
+
+    function openSettings() {
+        if (root.windowMode !== "full") {
+            pendingOpenSettings = true
+            root.enterFullMode()
+            return
+        }
+        pendingOpenSettings = false
+        root.closeTransientPanels()
+        root.showSettings = true
+    }
+
     // Preserve lyrics state when switching to mini mode
     property bool savedLyricsState: false
 
-    onIsMiniModeChanged: {
-        if (isMiniMode) {
-            // Save lyrics state before switching to mini mode
-            savedLyricsState = showLyrics
-            showPlaylist = false
+    onWindowModeChanged: {
+        syncWindowChrome()
+        if (isMiniMode || isIslandMode) {
             showLyrics = false
-            showEq = false
-        } else {
-            // Restore lyrics state when switching back to full mode
-            if (savedLyricsState) {
-                showLyrics = true
-            }
+        }
+        if (isIslandMode) {
+            positionIsland()
+        }
+        if (!root.transitioning) {
+            root.displayedCornerRadius = targetCornerRadius
         }
     }
 
     onShowPlaylistChanged: {
         if (showPlaylist) {
-            // Don't reset showLyrics - just hide it temporarily
+            showSettings = false
             showEq = false
         }
     }
@@ -111,309 +269,385 @@ ApplicationWindow {
         }
     }
 
+    onShowSettingsChanged: {
+        if (showSettings) {
+            showPlaylist = false
+            showEq = false
+        }
+    }
+
     Connections {
-        target: playerController
-        function onLoopingChanged() {
-            if (playerController.isLooping && root.isShuffle) {
-                root.isShuffle = false
+        target: appSettings
+        function onThemeModeChanged() {
+            syncWindowChrome()
+        }
+    }
+
+    // ── Mode Transition Animation Engine ──
+    QtObject {
+        id: modeTransition
+        property string pendingMode: ""
+
+        function switchTo(mode) {
+            pendingMode = mode
+            root.outgoingMode = root.windowMode
+            root.incomingMode = mode
+            transitionAnimation.stop()
+            transitionAnimation.start()
+        }
+
+        function targetW() {
+            switch (pendingMode) {
+            case "island": return Theme.islandWidth
+            case "mini":   return Theme.miniWidth
+            default:       return Theme.fullWidth
+            }
+        }
+
+        function targetH() {
+            switch (pendingMode) {
+            case "island": return Theme.islandHeight
+            case "mini":   return Theme.miniHeight
+            default:       return Theme.fullHeight
+            }
+        }
+
+        function targetR() {
+            switch (pendingMode) {
+            case "island": return Theme.radiusIsland
+            case "mini":   return Theme.radiusMini
+            default:       return Theme.radiusLarge
+            }
+        }
+
+        function targetX() {
+            if (pendingMode === "island") {
+                var screenX = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+                var screenWidth = Number.isFinite(Screen.width) && Screen.width > 0
+                    ? Screen.width : Theme.islandWidth
+                return screenX + Math.round((screenWidth - Theme.islandWidth) / 2)
+            }
+            // For other modes, keep current x (or center on screen if coming from island)
+            if (root.isIslandMode) {
+                var sw = Number.isFinite(Screen.width) && Screen.width > 0 ? Screen.width : targetW()
+                var sx = Number.isFinite(Screen.virtualX) ? Screen.virtualX : 0
+                return sx + Math.round((sw - targetW()) / 2)
+            }
+            return root.x
+        }
+
+        function targetY() {
+            if (pendingMode === "island") {
+                return Theme.islandTopMargin
+            }
+            if (root.isIslandMode) {
+                var sh = Number.isFinite(Screen.height) && Screen.height > 0 ? Screen.height : targetH()
+                return Math.round((sh - targetH()) / 2)
+            }
+            return root.y
+        }
+    }
+
+    SequentialAnimation {
+        id: transitionAnimation
+
+        ScriptAction {
+            script: {
+                root.transitioning = true
+                root.transitionProgress = 0
+            }
+        }
+
+        ParallelAnimation {
+            NumberAnimation {
+                target: root
+                property: "width"
+                to: modeTransition.targetW()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "height"
+                to: modeTransition.targetH()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "x"
+                to: modeTransition.targetX()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "y"
+                to: modeTransition.targetY()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "displayedCornerRadius"
+                to: modeTransition.targetR()
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+            NumberAnimation {
+                target: root
+                property: "transitionProgress"
+                to: 1
+                duration: 360
+                easing.type: Easing.InOutCubic
+            }
+        }
+
+        ScriptAction {
+            script: {
+                root.windowMode = modeTransition.pendingMode
+                syncWindowChrome()
+                if (root.windowMode === "full" && root.pendingOpenSettings) {
+                    root.pendingOpenSettings = false
+                    root.closeTransientPanels()
+                    root.showSettings = true
+                } else if (root.windowMode === "full" && root.savedLyricsState && !root.showSettings) {
+                    root.showLyrics = true
+                }
+                root.displayedCornerRadius = root.targetCornerRadius
+                root.outgoingMode = ""
+                root.incomingMode = ""
+                root.transitionProgress = 0
+                root.transitioning = false
             }
         }
     }
 
-    Behavior on width {
+    Behavior on x {
+        enabled: !dragArea.isDragging && !root.transitioning
         NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
     }
-    Behavior on height {
+    Behavior on y {
+        enabled: !dragArea.isDragging && !root.transitioning
         NumberAnimation { duration: 350; easing.type: Easing.InOutQuad }
     }
 
-    Rectangle {
-        id: card
-        anchors.fill: parent
-        anchors.margins: 0
-        radius: isMiniMode ? Theme.radiusMini : Theme.radiusLarge
-        color: Theme.cardBg
-        border.color: Theme.cardBorder
-        border.width: 1
+    onWidthChanged: {
+        if (isIslandMode) {
+            positionIsland()
+        }
     }
 
-    WindowControls {
-        id: windowControls
-        z: 3
-        anchors.top: card.top
-        anchors.right: card.right
-        anchors.topMargin: 14
-        anchors.rightMargin: 16
-        visible: !showPlaylist
-        miniMode: root.isMiniMode
-        isPinned: root.isPinned
-        onToggleMiniRequested: root.isMiniMode = !root.isMiniMode
-        onMinimizeRequested: root.showMinimized()
-        onCloseRequested: root.hide()
-        onTogglePinRequested: root.isPinned = !root.isPinned
+    onHeightChanged: {
+        if (isIslandMode) {
+            positionIsland()
+        }
     }
 
-    property point dragStartPosition
-    property bool isDragging: false
-    property int snapThreshold: 20  // Snap distance from screen edge
-
-    // Edge snapping function for mini mode
-    function snapToEdge(newX, newY) {
-        var screenWidth = Screen.width
-        var screenHeight = Screen.height
-        var windowWidth = root.width
-        var windowHeight = root.height
-
-        // Snap to left edge
-        if (newX < snapThreshold) {
-            newX = 0
+    onScreenChanged: {
+        if (isIslandMode) {
+            positionIsland()
         }
-        // Snap to right edge
-        else if (newX + windowWidth > screenWidth - snapThreshold) {
-            newX = screenWidth - windowWidth
-        }
-
-        // Snap to top edge
-        if (newY < snapThreshold) {
-            newY = 0
-        }
-        // Snap to bottom edge (accounting for taskbar ~40px)
-        else if (newY + windowHeight > screenHeight - snapThreshold - 40) {
-            newY = screenHeight - windowHeight - 40
-        }
-
-        return Qt.point(newX, newY)
     }
 
-    Item {
-        id: dragArea
-        anchors.left: card.left
-        anchors.right: card.right
-        anchors.top: card.top
-        height: Theme.dragHeight
-        z: 1
-        visible: !root.showPlaylist && !root.showEq  // Hide when playlist/EQ open
+    onVisibleChanged: {
+        if (visible && isIslandMode) {
+            positionIsland()
+        }
+    }
 
-        MouseArea {
+        Rectangle {
+            id: surface
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.SizeAllCursor
-            onPressed: (mouse) => {
-                root.isDragging = true
-                root.dragStartPosition = Qt.point(mouse.x, mouse.y)
+            anchors.margins: 0
+            radius: root.displayedCornerRadius
+            antialiasing: true
+        color: root.shellMode === "island" ? Theme.islandSurfaceBg : Theme.surfaceBg
+        border.color: root.shellMode === "island" ? Theme.islandSurfaceBorder : Theme.surfaceBorder
+        border.width: root.shellMode === "island" ? 0 : 1
+        clip: true
+
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            gradient: Gradient {
+                GradientStop {
+                    position: 0.0
+                    color: root.shellMode === "island" ? Theme.islandSurfaceHighlight : Theme.surfaceHighlight
+                }
+                GradientStop {
+                    position: 0.45
+                    color: root.shellMode === "island" ? Theme.islandSurfaceMidHighlight : Theme.surfaceMidHighlight
+                }
+                GradientStop {
+                    position: 1.0
+                    color: root.shellMode === "island" ? Theme.islandSurfaceBottomTint : Theme.surfaceBottomTint
+                }
             }
-            onPositionChanged: (mouse) => {
-                if (pressed && root.isDragging) {
-                    var globalPos = mapToGlobal(mouse.x, mouse.y)
-                    var newX = globalPos.x - root.dragStartPosition.x
-                    var newY = globalPos.y - root.dragStartPosition.y
-                    
-                    // Apply edge snapping only in mini mode
-                    if (root.isMiniMode) {
-                        var snapped = root.snapToEdge(newX, newY)
-                        root.x = snapped.x
-                        root.y = snapped.y
-                    } else {
-                        root.x = newX
-                        root.y = newY
+        }
+
+        Rectangle {
+            visible: !root.isIslandMode
+            width: root.isMiniMode ? 180 : 320
+            height: root.isMiniMode ? 120 : 260
+            x: root.isMiniMode ? -24 : -72
+            y: root.isMiniMode ? -30 : -88
+            radius: width / 2
+            color: Theme.surfaceGlowBlue
+        }
+
+        Rectangle {
+            visible: !root.isIslandMode
+            width: root.isMiniMode ? 120 : 220
+            height: root.isMiniMode ? 120 : 220
+            x: width + 90
+            y: height - (root.isMiniMode ? 80 : 120)
+            radius: width / 2
+            color: Theme.surfaceGlowRose
+        }
+
+        Item {
+            id: contentArea
+            anchors.fill: parent
+
+            Item {
+                id: fullWrapper
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: root.modeOpacity("full")
+                scale: root.modeScale("full")
+
+                FullPlayer {
+                    id: fullPlayer
+                    anchors.fill: parent
+                    controller: playerController
+                    appWindow: root
+                    showLyrics: root.showLyrics
+                    showEq: root.showEq
+                    showPlaylist: root.showPlaylist
+                    isShuffle: root.isShuffle
+                    compact: root.compact
+                    lyrics: root.lyricsLines
+                    onToggleLyrics: root.showLyrics = !root.showLyrics
+                    onToggleEq: root.showEq = !root.showEq
+                    onTogglePlaylist: root.showPlaylist = !root.showPlaylist
+                    onToggleShuffle: root.toggleShuffle()
+                    onOpenFilesRequested: fileDialog.open()
+                }
+            }
+
+            Item {
+                id: miniWrapper
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: root.modeOpacity("mini")
+                scale: root.modeScale("mini")
+
+                MiniPlayer {
+                    id: miniPlayer
+                    anchors.fill: parent
+                    controller: playerController
+                    title: playerController.currentSong
+                    artist: "本地音乐"
+                    isShuffle: root.isShuffle
+                    onToggleShuffle: root.toggleShuffle()
+                }
+            }
+
+            Item {
+                id: islandWrapper
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: root.modeOpacity("island")
+                scale: root.modeScale("island")
+
+                DynamicIsland {
+                    id: dynamicIsland
+                    width: Theme.islandWidth
+                    height: Theme.islandHeight
+                    anchors.centerIn: parent
+                    controller: playerController
+                    onOpenMiniRequested: root.enterMiniMode()
+                }
+            }
+
+            PlaylistOverlay {
+                id: playlistOverlay
+                anchors.fill: parent
+                open: root.showPlaylist && !root.isMiniMode && !root.isIslandMode
+                model: playerController.playlist
+                currentIndex: playerController.currentIndex
+                isPlaying: playerController.isPlaying
+                appWindow: root
+                onCloseRequested: root.showPlaylist = false
+                onOpenFilesRequested: fileDialog.open()
+                onSelectIndex: (index) => {
+                    playerController.playIndex(index)
+                    if (root.compact) {
+                        root.showPlaylist = false
                     }
                 }
             }
-            onReleased: root.isDragging = false
+
+            SettingsOverlay {
+                id: settingsOverlay
+                anchors.fill: parent
+                open: root.showSettings
+                appWindow: root
+                settings: appSettings
+                onCloseRequested: root.showSettings = false
+            }
+        }
+
+        WindowControls {
+            id: windowControls
+            z: 3
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 14
+            anchors.rightMargin: 16
+            visible: !showPlaylist && !showSettings && !isIslandMode && !transitioning
+            miniMode: root.isMiniMode
+            islandMode: root.isIslandMode
+            isPinned: root.isPinned
+            settingsOpen: root.showSettings
+            onToggleMiniRequested: root.toggleMiniMode()
+            onOpenIslandRequested: root.enterIslandMode()
+            onMinimizeRequested: root.showMinimized()
+            onCloseRequested: root.hide()
+            onTogglePinRequested: root.isPinned = !root.isPinned
+            onOpenSettingsRequested: root.openSettings()
+        }
+
+        WindowDragArea {
+            id: dragArea
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            appWindow: root
+            isMiniMode: root.isMiniMode
+            isIslandMode: root.isIslandMode
+            showPlaylist: root.showPlaylist
+            showEq: root.showEq
+            showSettings: root.showSettings
         }
     }
 
-    Item {
-        id: contentArea
-        anchors.fill: card
-        anchors.margins: 0
+    OpenFilesDialog {
+        id: fileDialog
+        controller: playerController
     }
 
-    FullPlayer {
-        id: fullPlayer
-        anchors.fill: contentArea
-        visible: opacity > 0
-        opacity: isMiniMode ? 0 : 1
+    AppShortcuts {
         controller: playerController
         appWindow: root
-        showLyrics: root.showLyrics
-        showEq: root.showEq
-        showPlaylist: root.showPlaylist
-        isShuffle: root.isShuffle
-        compact: root.compact
-        lyrics: root.lyricsLines
-        onToggleLyrics: root.showLyrics = !root.showLyrics
-        onToggleEq: root.showEq = !root.showEq
-        onTogglePlaylist: root.showPlaylist = !root.showPlaylist
-        onToggleShuffle: root.toggleShuffle()
-        onOpenFilesRequested: fileDialog.open()
-
-        Behavior on opacity {
-            NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
-        }
     }
 
-    MiniPlayer {
-        id: miniPlayer
-        anchors.fill: contentArea
-        visible: opacity > 0
-        opacity: isMiniMode ? 1 : 0
-        controller: playerController
-        title: playerController.currentSong
-        artist: "本地音乐"
-        isShuffle: root.isShuffle
-        onToggleShuffle: root.toggleShuffle()
-
-        Behavior on opacity {
-            NumberAnimation { duration: 250; easing.type: Easing.InOutQuad }
-        }
-    }
-
-    FileDialog {
-        id: fileDialog
-        title: "打开音乐文件"
-        fileMode: FileDialog.OpenFiles
-        currentFolder: playerController.lastFolder
-        nameFilters: [
-            "Music Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma *.3gp *.mp4 *.mov *.avi *.mkv *.webm)",
-            "Audio Files (*.mp3 *.flac *.wav *.m4a *.ogg *.oga *.aac *.opus *.wma)",
-            "Video Files (*.mp4 *.mov *.avi *.mkv *.webm *.3gp)",
-            "All Files (*)"
-        ]
-        onAccepted: playerController.setPlaylistFromUrls(selectedFiles)
-    }
-
-    Shortcut {
-        sequence: "Space"
-        onActivated: playerController.togglePlayPause()
-    }
-
-    Shortcut {
-        sequence: "Left"
-        onActivated: playerController.previous()
-    }
-    Shortcut {
-        sequence: "Right"
-        onActivated: playerController.next()
-    }
-
-    Shortcut {
-        sequence: "Up"
-        onActivated: playerController.volume = Math.min(100, playerController.volume + 5)
-    }
-    Shortcut {
-        sequence: "Down"
-        onActivated: playerController.volume = Math.max(0, playerController.volume - 5)
-    }
-
-    Shortcut {
-        sequence: "M"
-        onActivated: playerController.isMuted = !playerController.isMuted
-    }
-    Shortcut {
-        sequence: "L"
-        onActivated: showPlaylist = !showPlaylist
-    }
-
-    Shortcut {
-        sequence: "E"
-        onActivated: showEq = !showEq
-    }
-
-    Platform.SystemTrayIcon {
+    TrayIcon {
         id: trayIcon
-        visible: available
-        icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/listen1.ico"
-        tooltip: trayTooltip
-        menu: Platform.Menu {
-            Platform.MenuItem {
-                text: root.visible ? "隐藏窗口" : "显示窗口"
-                icon.source: root.visible ? "qrc:/qt/qml/MusicPlayer/resources/icons/minus.png" : "qrc:/qt/qml/MusicPlayer/resources/icons/maximize-2.png"
-                onTriggered: {
-                    if (root.visible) {
-                        root.hide()
-                    } else {
-                        root.showMainWindow()
-                    }
-                }
-            }
-            Platform.MenuSeparator { }
-            Platform.MenuItem {
-                text: playerController.isPlaying ? "暂停" : "播放"
-                icon.source: playerController.isPlaying 
-                    ? "qrc:/qt/qml/MusicPlayer/resources/icons/pause.png" 
-                    : "qrc:/qt/qml/MusicPlayer/resources/icons/play.png"
-                onTriggered: playerController.togglePlayPause()
-            }
-            Platform.MenuItem {
-                text: "上一首"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/skip-back.png"
-                onTriggered: playerController.previous()
-            }
-            Platform.MenuItem {
-                text: "下一首"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/skip-forward.png"
-                onTriggered: playerController.next()
-            }
-
-            Platform.MenuSeparator { }
-
-            Platform.MenuItem {
-                text: "增加音量"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/volume-2.png"
-                onTriggered: playerController.volume = Math.min(100, playerController.volume + 10)
-            }
-            Platform.MenuItem {
-                text: "减小音量"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/volume-2.png"
-                onTriggered: playerController.volume = Math.max(0, playerController.volume - 10)
-            }
-            Platform.MenuItem {
-                text: playerController.isMuted ? "取消静音" : "静音"
-                icon.source: playerController.isMuted 
-                    ? "qrc:/qt/qml/MusicPlayer/resources/icons/volume-x.png"
-                    : "qrc:/qt/qml/MusicPlayer/resources/icons/volume-2.png"
-                onTriggered: playerController.isMuted = !playerController.isMuted
-            }
-
-            Platform.MenuSeparator { }
-
-            Platform.MenuItem {
-                text: "循环播放"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/repeat.png"
-                checkable: true
-                checked: playerController.isLooping
-                onTriggered: playerController.isLooping = !playerController.isLooping
-            }
-
-            Platform.MenuItem {
-                text: "随机播放"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/shuffle.png"
-                checkable: true
-                checked: root.isShuffle
-                onTriggered: root.toggleShuffle()
-            }
-
-            Platform.MenuSeparator { }
-
-            Platform.MenuItem {
-                text: "退出"
-                icon.source: "qrc:/qt/qml/MusicPlayer/resources/icons/x.png"
-                onTriggered: Qt.quit()
-            }
-        }
-
-        onActivated: (reason) => {
-            if (reason === Platform.SystemTrayIcon.Trigger
-                || reason === Platform.SystemTrayIcon.DoubleClick) {
-                root.showMainWindow()
-            } else if (reason === Platform.SystemTrayIcon.MiddleClick) {
-                playerController.togglePlayPause()
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        playerController.loadSavedPlaylist()
+        appWindow: root
+        controller: playerController
+        isShuffle: root.isShuffle
+        onToggleShuffleRequested: root.toggleShuffle()
     }
 }
