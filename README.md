@@ -74,8 +74,8 @@ then run from the repository root:
 
 ```powershell
 cargo build --release --locked
-.github/scripts/build-installer.ps1 -Version 1.1.0
-.github/scripts/package-windows.ps1 -Version 1.1.0
+.github/scripts/build-installer.ps1 -Version 1.1.1
+.github/scripts/package-windows.ps1 -Version 1.1.1
 ```
 
 The installer script verifies the name and version embedded in `Mi.exe`. Pass `-BinaryPath`
@@ -87,7 +87,7 @@ To package a Linux or macOS build locally, use the matching target:
 ```bash
 # Linux x64; use x86_64-apple-darwin or aarch64-apple-darwin on the corresponding Mac.
 cargo build --release --locked --target x86_64-unknown-linux-gnu
-bash .github/scripts/package-unix.sh 1.1.0 x86_64-unknown-linux-gnu
+bash .github/scripts/package-unix.sh 1.1.1 x86_64-unknown-linux-gnu
 ```
 
 On macOS, set `MACOSX_DEPLOYMENT_TARGET=11.0` before building and packaging.
@@ -122,7 +122,7 @@ macOS versions have been tested.
 The workspace version in `Cargo.toml` is the single source of truth:
 
 1. Update the numeric `x.y.z` version, refresh `Cargo.lock`, and commit the changes.
-2. Push a matching tag, for example `v1.1.0`.
+2. Push a matching tag, for example `v1.1.1`.
 
 `.github/workflows/release.yml` checks the tag before building Windows/Linux x64 and
 macOS Intel/Apple Silicon packages. All four builds and workspace tests must succeed
