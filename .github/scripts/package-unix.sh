@@ -48,7 +48,7 @@ else
     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
     cp "$binary" "$app/Contents/MacOS/Mi"
     chmod +x "$app/Contents/MacOS/Mi"
-    lipo -verify_arch "$machine_arch" "$app/Contents/MacOS/Mi"
+    lipo "$app/Contents/MacOS/Mi" -verify_arch "$machine_arch"
     otool -L "$app/Contents/MacOS/Mi" > "$stage/dependencies.txt"
     cat "$stage/dependencies.txt"
     # Releases may only link to macOS system libraries and frameworks.
