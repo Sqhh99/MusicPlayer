@@ -72,7 +72,7 @@ pub fn tr(lang: Lang, key: Key) -> &'static str {
     use Key::*;
     match lang {
         Lang::Zh => match key {
-            AppName => "Music Player",
+            AppName => "Mi",
             NoSongSelected => "未选择歌曲",
             LocalMusic => "本地音乐",
             Playlist => "播放列表",
@@ -116,7 +116,7 @@ pub fn tr(lang: Lang, key: Key) -> &'static str {
             StatusPaused => " - 已暂停",
         },
         Lang::En => match key {
-            AppName => "Music Player",
+            AppName => "Mi",
             NoSongSelected => "No song selected",
             LocalMusic => "Local music",
             Playlist => "Playlist",

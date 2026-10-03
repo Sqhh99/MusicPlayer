@@ -1,4 +1,4 @@
-//! Platform-independent core of MusicPlayer: queue logic, lyrics, EQ math, settings and
+//! Platform-independent core of Mi: queue logic, lyrics, EQ math, settings and
 //! strings. Nothing here depends on the UI toolkit or the audio backend.
 
 pub mod easing;

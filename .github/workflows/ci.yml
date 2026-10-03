@@ -63,5 +63,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: runner.os == 'Windows'
         with:
-          name: MusicPlayer-windows-x64
-          path: target/release/MusicPlayer.exe
+          name: Mi-windows-x64
+          path: target/release/Mi.exe

@@ -1,0 +1,206 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  version:
+    name: Validate release version
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Read Cargo version and validate tag
+        id: version
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+
+          metadata = json.loads(subprocess.check_output([
+              "cargo", "metadata", "--no-deps", "--locked", "--format-version", "1"
+          ]))
+          package = next(p for p in metadata["packages"] if p["name"] == "mi")
+          version = package["version"]
+          if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+              raise SystemExit("Release packaging requires a numeric x.y.z Cargo version")
+          if any(int(part) > 65535 for part in version.split(".")):
+              raise SystemExit("Version components exceed the Windows version resource limit")
+          expected_tag = f"v{version}"
+          if os.environ["GITHUB_REF_TYPE"] == "tag" and os.environ["GITHUB_REF_NAME"] != expected_tag:
+              raise SystemExit(f"Tag {os.environ['GITHUB_REF_NAME']} must match {expected_tag}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"version={version}\n")
+          print(f"Building Mi {version}")
+          PY
+
+  build:
+    name: Build ${{ matrix.platform }} ${{ matrix.arch }}
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            platform: windows
+            arch: x64
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            platform: linux
+            arch: x64
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            platform: macos
+            arch: x64
+          - os: macos-15
+            target: aarch64-apple-darwin
+            platform: macos
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      RELEASE_TARGET: ${{ matrix.target }}
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: mi-release-${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang pkg-config libssl-dev libasound2-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libx11-xcb-dev \
+            libxcb1-dev libfontconfig-dev libfreetype6-dev libvulkan-dev libdbus-1-dev
+
+      - name: Locate Windows shader compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $fxc = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\fxc.exe" |
+            Sort-Object { [version]$_.Directory.Parent.Name } -Descending |
+            Select-Object -First 1
+          if (-not $fxc) { throw 'Windows SDK fxc.exe was not found' }
+          "GPUI_FXC_PATH=$($fxc.FullName)" >> $env:GITHUB_ENV
+
+      - name: Select Xcode and verify Metal tools
+        if: runner.os == 'macOS'
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_16.4.app/Contents/Developer
+          xcrun --find metal
+          xcrun --find metallib
+
+      - name: Build release binary
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Run workspace tests
+        run: cargo test --workspace --release --locked --target ${{ matrix.target }}
+
+      - name: Build Windows installer and portable package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = Join-Path "${env:ProgramFiles(x86)}" 'Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "Inno Setup installation failed ($LASTEXITCODE)" }
+          }
+          $binary = "target\$env:RELEASE_TARGET\release\Mi.exe"
+          .github/scripts/build-installer.ps1 -Version $env:RELEASE_VERSION -BinaryPath $binary
+          .github/scripts/package-windows.ps1 -Version $env:RELEASE_VERSION -BinaryPath $binary
+
+      - name: Package Linux or macOS program
+        if: runner.os != 'Windows'
+        run: bash .github/scripts/package-unix.sh "$RELEASE_VERSION" "$RELEASE_TARGET"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: Mi-${{ needs.version.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/Mi-${{ needs.version.outputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}*
+          if-no-files-found: error
+
+  publish:
+    name: Publish complete release
+    needs: [version, build]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: Mi-${{ needs.version.outputs.version }}-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify every package and checksum
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import os
+          from pathlib import Path
+
+          prefix = f"Mi-{os.environ['RELEASE_VERSION']}"
+          packages = [
+              f"{prefix}-windows-x64-setup.exe",
+              f"{prefix}-windows-x64-portable.zip",
+              f"{prefix}-linux-x64.tar.gz",
+              f"{prefix}-macos-x64.app.zip",
+              f"{prefix}-macos-arm64.app.zip",
+          ]
+          dist = Path("dist")
+          expected = set(packages + [f"{name}.sha256" for name in packages])
+          actual = {path.name for path in dist.iterdir()}
+          if actual != expected:
+              raise SystemExit(f"Incomplete release: missing={expected - actual}, unexpected={actual - expected}")
+          for name in packages:
+              asset = dist / name
+              if not asset.stat().st_size:
+                  raise SystemExit(f"Empty release asset: {name}")
+              digest = hashlib.sha256()
+              with asset.open("rb") as source:
+                  for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                      digest.update(chunk)
+              checksum = digest.hexdigest()
+              expected_line = f"{checksum}  {name}"
+              if (dist / f"{name}.sha256").read_text(encoding="ascii").strip() != expected_line:
+                  raise SystemExit(f"Checksum mismatch: {name}")
+              print(f"Verified {name}")
+          PY
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: Mi v${{ needs.version.outputs.version }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          draft: false
+          prerelease: false

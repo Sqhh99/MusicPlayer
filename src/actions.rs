@@ -3,12 +3,9 @@
 use gpui::{App, KeyBinding, actions};
 
 /// Key context set on the main view; shortcuts only apply inside it.
-pub const KEY_CONTEXT: &str = "MusicPlayer";
+pub const KEY_CONTEXT: &str = "Mi";
 
-actions!(
-    music_player,
-    [TogglePlay, Previous, Next, VolumeUp, VolumeDown, ToggleMute, TogglePlaylist, ToggleEq]
-);
+actions!(mi, [TogglePlay, Previous, Next, VolumeUp, VolumeDown, ToggleMute, TogglePlaylist, ToggleEq]);
 
 pub fn bind_keys(cx: &mut App) {
     let context = Some(KEY_CONTEXT);

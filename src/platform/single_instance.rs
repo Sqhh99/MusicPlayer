@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use interprocess::local_socket::prelude::*;
 use interprocess::local_socket::{GenericNamespaced, ListenerOptions, Name};
 
-const SOCKET_NAME: &str = "com.sqhh99.MusicPlayer.instance";
+const SOCKET_NAME: &str = "com.sqhh99.Mi.instance";
 const ACTIVATE: &[u8] = b"ACTIVATE";
 
 pub enum Instance {
