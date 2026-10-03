@@ -3,7 +3,7 @@ members = ["crates/player-core"]
 resolver = "2"
 
 [workspace.package]
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 license = "MIT"
 authors = ["Sqhh99"]
@@ -17,16 +17,17 @@ serde_json = "1"
 fastrand = "2.3"
 
 [package]
-name = "music-player"
-description = "A modern, minimalist music player built with Rust and GPUI"
+name = "mi"
+description = "A lightweight local music player with synchronized lyrics and a live equalizer, built with Rust and GPUI"
+repository = "https://github.com/Sqhh99/Mi"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
-default-run = "MusicPlayer"
+default-run = "Mi"
 
 [[bin]]
-name = "MusicPlayer"
+name = "Mi"
 path = "src/main.rs"
 
 [dependencies]

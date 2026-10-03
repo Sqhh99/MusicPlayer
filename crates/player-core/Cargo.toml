@@ -1,6 +1,6 @@
 [package]
 name = "player-core"
-description = "Platform-independent playback logic for MusicPlayer"
+description = "Platform-independent playback logic for Mi"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

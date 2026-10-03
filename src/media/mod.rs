@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn reads_sidecars_and_duration() {
-        let dir = std::env::temp_dir().join(format!("music-player-media-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("mi-media-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let audio = dir.join("song.wav");
         // One second of 8 kHz mono silence.

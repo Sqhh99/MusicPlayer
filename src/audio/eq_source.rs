@@ -167,7 +167,7 @@ mod tests {
         wav.extend((pcm.len() as u32).to_le_bytes());
         wav.extend(pcm);
 
-        let dir = std::env::temp_dir().join(format!("music-player-tests-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("mi-tests-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join(name);
         std::fs::write(&path, wav).unwrap();

@@ -17,7 +17,7 @@ pub struct SettingsModel {
 impl SettingsModel {
     /// Loads settings from the per-user config directory, falling back to defaults.
     pub fn load() -> Self {
-        let path = directories::ProjectDirs::from("com", "sqhh99", "MusicPlayer")
+        let path = directories::ProjectDirs::from("com", "sqhh99", "Mi")
             .map(|dirs| dirs.config_dir().join("settings.json"));
         let mut settings = match path.as_deref().map(Settings::load) {
             Some(Ok(settings)) => settings,

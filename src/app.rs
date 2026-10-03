@@ -159,12 +159,12 @@ fn open_main_window(
         is_minimizable: true,
         window_background: WindowBackgroundAppearance::Transparent,
         window_decorations: Some(WindowDecorations::Client),
-        app_id: Some("com.sqhh99.MusicPlayer".into()),
+        app_id: Some("com.sqhh99.Mi".into()),
         ..Default::default()
     };
     let dark = cx.global::<Theme>().dark;
     let window = cx.open_window(options, |window, cx| {
-        window.set_window_title("MusicPlayer");
+        window.set_window_title("Mi");
         cx.new(|cx| MainView::new(player, settings.clone(), window, cx))
     })?;
 
