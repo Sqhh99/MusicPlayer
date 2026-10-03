@@ -1,0 +1,163 @@
+//! UI strings in Chinese and English.
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Lang {
+    #[default]
+    Zh,
+    En,
+}
+
+impl Lang {
+    pub const ALL: [Lang; 2] = [Lang::Zh, Lang::En];
+
+    /// The language's name in that language, for the language picker.
+    pub fn native_name(self) -> &'static str {
+        match self {
+            Lang::Zh => "中文",
+            Lang::En => "English",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Key {
+    AppName,
+    NoSongSelected,
+    LocalMusic,
+    Playlist,
+    PlaylistEmpty,
+    PlaylistEmptyHint,
+    OpenFiles,
+    AudioFiles,
+    Settings,
+    Interface,
+    Theme,
+    ThemeDay,
+    ThemeDayHint,
+    ThemeNight,
+    ThemeNightHint,
+    Material,
+    SurfaceMaterial,
+    ButtonMaterial,
+    BackgroundGlow,
+    BackgroundGlowHint,
+    Language,
+    LanguageHint,
+    NoLyrics,
+    Equalizer,
+    Bass,
+    Mid,
+    Treble,
+    ShowWindow,
+    HideWindow,
+    Play,
+    Pause,
+    Previous,
+    Next,
+    VolumeUp,
+    VolumeDown,
+    Mute,
+    Unmute,
+    RepeatOne,
+    Shuffle,
+    Quit,
+    StatusPlaying,
+    StatusPaused,
+}
+
+pub fn tr(lang: Lang, key: Key) -> &'static str {
+    use Key::*;
+    match lang {
+        Lang::Zh => match key {
+            AppName => "Music Player",
+            NoSongSelected => "未选择歌曲",
+            LocalMusic => "本地音乐",
+            Playlist => "播放列表",
+            PlaylistEmpty => "播放列表为空",
+            PlaylistEmptyHint => "点击右上角的文件夹按钮添加音乐",
+            OpenFiles => "打开音乐文件",
+            AudioFiles => "音频文件",
+            Settings => "设置",
+            Interface => "界面",
+            Theme => "主题",
+            ThemeDay => "白天",
+            ThemeDayHint => "明亮半透明界面",
+            ThemeNight => "黑夜",
+            ThemeNightHint => "深色材质界面",
+            Material => "材质",
+            SurfaceMaterial => "界面材质强度",
+            ButtonMaterial => "按钮材质强度",
+            BackgroundGlow => "显示背景光晕",
+            BackgroundGlowHint => "控制顶部和底部的装饰性光晕",
+            Language => "语言",
+            LanguageHint => "界面与托盘菜单的显示语言",
+            NoLyrics => "暂无歌词",
+            Equalizer => "均衡器",
+            Bass => "低音",
+            Mid => "中音",
+            Treble => "高音",
+            ShowWindow => "显示窗口",
+            HideWindow => "隐藏窗口",
+            Play => "播放",
+            Pause => "暂停",
+            Previous => "上一首",
+            Next => "下一首",
+            VolumeUp => "增加音量",
+            VolumeDown => "减小音量",
+            Mute => "静音",
+            Unmute => "取消静音",
+            RepeatOne => "循环播放",
+            Shuffle => "随机播放",
+            Quit => "退出",
+            StatusPlaying => " - 播放中",
+            StatusPaused => " - 已暂停",
+        },
+        Lang::En => match key {
+            AppName => "Music Player",
+            NoSongSelected => "No song selected",
+            LocalMusic => "Local music",
+            Playlist => "Playlist",
+            PlaylistEmpty => "The playlist is empty",
+            PlaylistEmptyHint => "Use the folder button above to add music",
+            OpenFiles => "Open music files",
+            AudioFiles => "Audio files",
+            Settings => "Settings",
+            Interface => "Interface",
+            Theme => "Theme",
+            ThemeDay => "Day",
+            ThemeDayHint => "Bright translucent look",
+            ThemeNight => "Night",
+            ThemeNightHint => "Dark material look",
+            Material => "Material",
+            SurfaceMaterial => "Surface material strength",
+            ButtonMaterial => "Button material strength",
+            BackgroundGlow => "Show background glow",
+            BackgroundGlowHint => "Decorative glow at the top and bottom",
+            Language => "Language",
+            LanguageHint => "Language of the interface and tray menu",
+            NoLyrics => "No lyrics for this song",
+            Equalizer => "Equalizer",
+            Bass => "Bass",
+            Mid => "Mid",
+            Treble => "Treble",
+            ShowWindow => "Show window",
+            HideWindow => "Hide window",
+            Play => "Play",
+            Pause => "Pause",
+            Previous => "Previous",
+            Next => "Next",
+            VolumeUp => "Volume up",
+            VolumeDown => "Volume down",
+            Mute => "Mute",
+            Unmute => "Unmute",
+            RepeatOne => "Repeat one",
+            Shuffle => "Shuffle",
+            Quit => "Quit",
+            StatusPlaying => " - Playing",
+            StatusPaused => " - Paused",
+        },
+    }
+}

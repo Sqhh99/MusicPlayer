@@ -1,0 +1,72 @@
+[workspace]
+members = ["crates/player-core"]
+resolver = "2"
+
+[workspace.package]
+version = "1.0.0"
+edition = "2024"
+license = "MIT"
+authors = ["Sqhh99"]
+
+[workspace.dependencies]
+player-core = { path = "crates/player-core" }
+anyhow = "1"
+log = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+fastrand = "2.3"
+
+[package]
+name = "music-player"
+description = "A modern, minimalist music player built with Rust and GPUI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+default-run = "MusicPlayer"
+
+[[bin]]
+name = "MusicPlayer"
+path = "src/main.rs"
+
+[dependencies]
+player-core.workspace = true
+anyhow.workspace = true
+log.workspace = true
+fastrand.workspace = true
+gpui = "=0.2.2"
+rodio = { version = "0.22.2", default-features = false, features = ["playback", "mp3", "flac", "vorbis", "wav", "mp4", "symphonia-aac", "symphonia-alac"] }
+lofty = "0.25"
+rfd = "0.17"
+interprocess = "2.4"
+directories = "6"
+rust-embed = "8"
+async-channel = "2.5"
+crossbeam-channel = "0.5"
+env_logger = "0.11"
+image = { version = "0.25", default-features = false, features = ["png"] }
+raw-window-handle = "0.6"
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tray-icon = "0.26"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tray-icon = { version = "0.26", default-features = false, features = ["ksni"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_HiDpi",
+] }
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
