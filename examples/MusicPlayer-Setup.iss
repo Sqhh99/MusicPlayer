@@ -33,12 +33,12 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=D:\workspace\qt-workspace\MusicPlayer\LICENSE
+LicenseFile={#SourcePath}\..\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputDir=C:\Users\sqhh99\Desktop
 OutputBaseFilename=MusicPlayer-v1.0.0-win-x64-setup
-SetupIconFile=D:\workspace\qt-workspace\MusicPlayer\resources\icons\listen1.ico
+SetupIconFile={#SourcePath}\..\resources\appIcon.ico
 SolidCompression=yes
 WizardStyle=modern
 
@@ -49,8 +49,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\sqhh99\Desktop\MusicPlayer\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\sqhh99\Desktop\MusicPlayer\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Build first with `cargo build --release`; the app is a single self-contained executable.
+Source: "{#SourcePath}\..\target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
